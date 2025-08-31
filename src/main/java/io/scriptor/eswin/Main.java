@@ -6,6 +6,7 @@ import io.scriptor.eswin.xml.document.Element;
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -20,16 +21,15 @@ import java.util.TimerTask;
 public class Main {
 
     @MagicConstant(valuesFromClass = SwingConstants.class)
-    public static int getAlign(
+    public static Optional<Integer> getAlign(
             final @NotNull Element element,
-            final @NotNull String name,
-            final @MagicConstant(valuesFromClass = SwingConstants.class) int defaultValue
+            final @NotNull String name
     ) {
         if (!element.hasAttribute(name)) {
-            return defaultValue;
+            return Optional.empty();
         }
 
-        return switch (element.getAttribute(name)) {
+        return Optional.of(switch (element.getAttribute(name)) {
             case "center" -> SwingConstants.CENTER;
             case "top" -> SwingConstants.TOP;
             case "left" -> SwingConstants.LEFT;
@@ -38,7 +38,7 @@ public class Main {
             case "leading" -> SwingConstants.LEADING;
             case "trailing" -> SwingConstants.TRAILING;
             default -> throw new IllegalStateException();
-        };
+        });
     }
 
     @MagicConstant(valuesFromClass = BoxLayout.class)
@@ -66,14 +66,13 @@ public class Main {
 
         return Optional.of(switch (element.getAttribute("layout")) {
             case "flow" -> {
-                final var align = getAlign(element, "align", SwingConstants.LEFT);
+                final var layout = new FlowLayout();
 
-                final var hgap = element.getIntAttribute("hgap", 0);
-                final var vgap = element.getIntAttribute("vgap", 0);
+                getAlign(element, "align").ifPresent(layout::setAlignment);
+                element.getOptIntAttribute("hgap").ifPresent(layout::setHgap);
+                element.getOptIntAttribute("vgap").ifPresent(layout::setVgap);
 
                 final var baseline = element.hasAttribute("baseline");
-
-                final var layout = new FlowLayout(align, hgap, vgap);
                 layout.setAlignOnBaseline(baseline);
 
                 yield layout;
@@ -84,26 +83,26 @@ public class Main {
                 yield new BoxLayout(container, axis);
             }
             case "grid" -> {
-                final var rows = element.getIntAttribute("rows", 0);
-                final var cols = element.getIntAttribute("cols", 0);
+                final var layout = new GridLayout();
 
-                final var hgap = element.getIntAttribute("hgap", 0);
-                final var vgap = element.getIntAttribute("vgap", 0);
+                element.getOptIntAttribute("rows").ifPresent(layout::setRows);
+                element.getOptIntAttribute("cols").ifPresent(layout::setColumns);
+                element.getOptIntAttribute("hgap").ifPresent(layout::setHgap);
+                element.getOptIntAttribute("vgap").ifPresent(layout::setVgap);
 
-                yield new GridLayout(rows, cols, hgap, vgap);
+                yield layout;
             }
             default -> throw new IllegalStateException();
         });
     }
 
-    public static ActionListener getAction(
+    public static Optional<ActionListener> getAction(
             final @NotNull Context context,
             final @NotNull Element element,
             final @NotNull JComponent component
     ) {
         if (!element.hasAttribute("click"))
-            return _ -> {
-            };
+            return Optional.empty();
 
         final var path         = element.getAttribute("click");
         final var end          = path.lastIndexOf('.');
@@ -116,13 +115,13 @@ public class Main {
                                                              Context.class,
                                                              JComponent.class,
                                                              ActionEvent.class);
-            return event -> {
+            return Optional.of(event -> {
                 try {
                     loadedFunction.invoke(null, context, component, event);
                 } catch (final IllegalAccessException | InvocationTargetException e) {
                     throw new RuntimeException(e);
                 }
-            };
+            });
         } catch (final ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -142,31 +141,25 @@ public class Main {
                 yield panel;
             }
             case "label" -> {
-                final var halign = getAlign(element, "halign", SwingConstants.LEFT);
-                final var valign = getAlign(element, "valign", SwingConstants.CENTER);
-
                 final var label = new JLabel(element.text());
-                label.setHorizontalAlignment(halign);
-                label.setVerticalAlignment(valign);
+
+                getAlign(element, "halign").ifPresent(label::setHorizontalAlignment);
+                getAlign(element, "valign").ifPresent(label::setVerticalAlignment);
 
                 yield label;
             }
             case "button" -> {
                 final var button = new JButton(element.text());
 
-                final var action = getAction(context, element, button);
-                button.addActionListener(action);
+                getAction(context, element, button).ifPresent(button::addActionListener);
 
                 yield button;
             }
             default -> throw new IllegalStateException();
         };
 
-        if (element.hasAttribute("id"))
-            context.put(element.getAttribute("id"), component);
-
-        if (element.hasAttribute("title"))
-            component.setToolTipText(element.getAttribute("title"));
+        element.getOptAttribute("id").ifPresent(id -> context.put(id, component));
+        element.getOptAttribute("title").ifPresent(component::setToolTipText);
 
         return component;
     }
@@ -177,8 +170,20 @@ public class Main {
         final var configuration = device.getDefaultConfiguration();
         final var frame         = new JFrame("ESWIN", configuration);
 
-        frame.setSize(800, 600);
+        frame.setSize(400, 300);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        try (final var stream = ClassLoader.getSystemResourceAsStream("app.png")) {
+            if (stream == null)
+                throw new FileNotFoundException();
+
+            final var image = ImageIO.read(stream);
+            frame.setIconImage(image);
+
+        } catch (final IOException e) {
+            e.printStackTrace(System.err);
+            return;
+        }
 
         final Document document;
         try (final var stream = ClassLoader.getSystemResourceAsStream("layout/main.xml")) {
