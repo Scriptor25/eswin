@@ -2,7 +2,7 @@ package io.scriptor.eswin.xml.document;
 
 import org.jetbrains.annotations.NotNull;
 
-public record Prologue(String name, Attribute[] attributes) implements Printable {
+public record Instruction(String name, Attribute[] attributes) implements Printable {
 
     @Override
     public @NotNull String toString() {

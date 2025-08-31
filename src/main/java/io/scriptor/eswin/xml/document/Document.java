@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
-public record Document(Collection<Prologue> prologues, Element root) implements Printable {
+public record Document(Collection<Instruction> instructions, Element root) implements Printable {
 
     @Override
     public @NotNull String toString() {
@@ -14,7 +14,7 @@ public record Document(Collection<Prologue> prologues, Element root) implements 
     @Override
     public @NotNull String stringify(final int depth) {
         final var builder = new StringBuilder();
-        for (final var prologue : prologues) {
+        for (final var prologue : instructions) {
             builder.append(prologue.stringify(0))
                    .append('\n');
         }

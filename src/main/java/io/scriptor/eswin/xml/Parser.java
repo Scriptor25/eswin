@@ -43,7 +43,7 @@ public class Parser {
     }
 
     public Rule<Document> parseDocument;
-    public Rule<Prologue> parsePrologue;
+    public Rule<Instruction> parseInstruction;
     public Rule<Element> parseElement;
     public Rule<Text> parseText;
     public Rule<Integer> parseSymbol;
@@ -63,13 +63,13 @@ public class Parser {
         this.index = 0;
 
         this.parseDocument = wrap(() -> {
-            final var prologues = parseZeroOrOneOf(parsePrologue);
-            final var root      = parseElement.parse();
+            final var instructions = parseZeroOrOneOf(parseInstruction);
+            final var root         = parseElement.parse();
 
-            return new Document(prologues, root);
+            return new Document(instructions, root);
         });
 
-        this.parsePrologue = wrap(() -> {
+        this.parseInstruction = wrap(() -> {
             expect('<', true);
             expect('?', false);
             final var name       = parseIdentifier.parse();
@@ -77,7 +77,7 @@ public class Parser {
             expect('?', true);
             expect('>', false);
 
-            return new Prologue(name, attributes.toArray(Attribute[]::new));
+            return new Instruction(name, attributes.toArray(Attribute[]::new));
         });
 
         this.parseElement = wrap(() -> {
@@ -86,6 +86,12 @@ public class Parser {
             expect('<', true);
             final var begin      = parseIdentifier.parse();
             final var attributes = parseZeroOrMoreOf(parseAttribute);
+
+            if (skipif('/', true)) {
+                expect('>', false);
+                return new Element(begin, attributes.toArray(Attribute[]::new), new ElementBase[0]);
+            }
+
             expect('>', true);
             final var children = parseZeroOrMoreOf(() -> this.<ElementBase>parseUnionOf(parseElement, parseText));
             expect('<', true);
@@ -173,6 +179,16 @@ public class Parser {
         if (index >= data.length)
             return -1;
         return data[index];
+    }
+
+    public boolean skipif(final int codepoint, boolean ignoreWhitespace) {
+        if (ignoreWhitespace)
+            while (Character.isWhitespace(get()))
+                skip();
+        if (get() != codepoint)
+            return false;
+        skip();
+        return true;
     }
 
     public void expect(final int codepoint, boolean ignoreWhitespace) throws Unroll {

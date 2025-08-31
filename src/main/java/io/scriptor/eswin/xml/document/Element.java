@@ -3,7 +3,6 @@ package io.scriptor.eswin.xml.document;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,47 +42,5 @@ public record Element(String name, Attribute[] attributes, ElementBase[] childre
         return Arrays.stream(children)
                      .filter(Element.class::isInstance)
                      .map(Element.class::cast);
-    }
-
-    public boolean hasAttribute(final @NotNull String name) {
-        for (final var attribute : attributes)
-            if (attribute.name().equals(name))
-                return true;
-        return false;
-    }
-
-    public @NotNull String getAttribute(final @NotNull String name) {
-        for (final var attribute : attributes)
-            if (attribute.name().equals(name))
-                return attribute.value();
-        throw new IllegalStateException();
-    }
-
-    public Optional<String> getOptAttribute(final @NotNull String name) {
-        if (!hasAttribute(name))
-            return Optional.empty();
-        return Optional.of(getAttribute(name));
-    }
-
-    public @NotNull String getAttribute(final @NotNull String name, final @NotNull String defaultValue) {
-        if (!hasAttribute(name))
-            return defaultValue;
-        return getAttribute(name);
-    }
-
-    public int getIntAttribute(final @NotNull String name) {
-        return Integer.parseInt(getAttribute(name));
-    }
-
-    public Optional<Integer> getOptIntAttribute(final @NotNull String name) {
-        if (!hasAttribute(name))
-            return Optional.empty();
-        return Optional.of(getIntAttribute(name));
-    }
-
-    public int getIntAttribute(final @NotNull String name, final int defaultValue) {
-        if (!hasAttribute(name))
-            return defaultValue;
-        return getIntAttribute(name);
     }
 }
