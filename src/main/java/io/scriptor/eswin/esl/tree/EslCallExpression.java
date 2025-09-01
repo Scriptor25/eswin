@@ -5,6 +5,7 @@ import io.scriptor.eswin.esl.runtime.Value;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 public record EslCallExpression(@NotNull EslExpression callee, @NotNull EslExpression[] arguments)
         implements EslExpression {
@@ -17,5 +18,10 @@ public record EslCallExpression(@NotNull EslExpression callee, @NotNull EslExpre
                                     .toArray(Value[]::new);
 
         return callee.call(arguments);
+    }
+
+    @Override
+    public void observe(final @NotNull EslFrame frame, final @NotNull Consumer<Object> observer) {
+        throw new IllegalStateException();
     }
 }

@@ -13,6 +13,21 @@ public abstract class Grammar<R> {
 
     protected abstract R parseRoot(final @NotNull Context context) throws Unroll;
 
+    public R parse(final int @NotNull [] buffer, final int offset, final int length) {
+        final var context = new Context(buffer, offset, length);
+        return parse(context);
+    }
+
+    public R parse(final @NotNull String string, final int offset, final int length) {
+        final var context = new Context(string, offset, length);
+        return parse(context);
+    }
+
+    public R parse(final @NotNull InputStream stream, final int offset, final int length) throws IOException {
+        final var context = new Context(stream, offset, length);
+        return parse(context);
+    }
+
     public R parse(final int @NotNull [] buffer) {
         final var context = new Context(buffer);
         return parse(context);

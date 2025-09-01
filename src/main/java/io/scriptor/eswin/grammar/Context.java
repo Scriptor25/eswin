@@ -9,14 +9,17 @@ import java.io.PushbackInputStream;
 public class Context {
 
     private final int[] buffer;
-    private int index = 0;
+    private int index;
+    private int end;
 
     public Context(final int @NotNull [] buffer) {
-        this.buffer = buffer;
+        this(buffer, 0, buffer.length);
     }
 
     public Context(final @NotNull String string) {
         this.buffer = string.codePoints().toArray();
+        this.index = 0;
+        this.end = this.buffer.length;
     }
 
     public Context(final @NotNull InputStream stream) throws IOException {
@@ -25,6 +28,36 @@ public class Context {
         final var bytes   = wrapped.readAllBytes();
 
         this.buffer = new String(bytes, charset).codePoints().toArray();
+        this.index = 0;
+        this.end = this.buffer.length;
+    }
+
+    public Context(final int @NotNull [] buffer, final int offset, final int length) {
+        this.buffer = buffer;
+        this.index = offset;
+        this.end = offset + length;
+    }
+
+    public Context(final @NotNull String string, final int offset) {
+        this.buffer = string.codePoints().toArray();
+        this.index = offset;
+        this.end = this.buffer.length;
+    }
+
+    public Context(final @NotNull String string, final int offset, final int length) {
+        this.buffer = string.codePoints().toArray();
+        this.index = offset;
+        this.end = offset + length;
+    }
+
+    public Context(final @NotNull InputStream stream, final int offset, final int length) throws IOException {
+        final var wrapped = new PushbackInputStream(stream);
+        final var charset = Encoding.detect(wrapped);
+        final var bytes   = wrapped.readAllBytes();
+
+        this.buffer = new String(bytes, charset).codePoints().toArray();
+        this.index = offset;
+        this.end = offset + length;
     }
 
     public int index() {
@@ -40,13 +73,13 @@ public class Context {
     }
 
     public int skip() {
-        if (index >= buffer.length)
+        if (index >= end)
             return -1;
         return buffer[index++];
     }
 
     public int get() {
-        if (index >= buffer.length)
+        if (index >= end)
             return -1;
         return buffer[index];
     }

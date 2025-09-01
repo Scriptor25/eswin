@@ -14,10 +14,10 @@ import java.util.List;
  */
 public class EslGrammar extends Grammar<EslExpression> {
 
-    // expression      = call | member | store | constant | name
+    // expression      = call | store | member | name | constant
     // call            = member '(' ( expression ',' )* expression? ')'
-    // member          = name ( '.' name )+
     // store           = member '=' expression
+    // member          = name ( '.' name )+
     // name            = ( letter | '_' ) ( letter | digit | '_' )*
     // constant        = constant_string | constant_char | constant_int | constant_float
     // constant_string = '"' (!'"')* '"'
@@ -31,7 +31,7 @@ public class EslGrammar extends Grammar<EslExpression> {
     }
 
     protected @NotNull EslExpression expression(final @NotNull Context context) throws Unroll {
-        return parseUnionOf(context, this::call, this::member, this::store, this::constant, this::name);
+        return parseUnionOf(context, this::call, this::store, this::member, this::name, this::constant);
     }
 
     protected @NotNull EslCallExpression call(final @NotNull Context context) throws Unroll {
@@ -56,6 +56,16 @@ public class EslGrammar extends Grammar<EslExpression> {
         }).parse(context);
     }
 
+    protected @NotNull EslStoreExpression store(final @NotNull Context context) throws Unroll {
+        return wrap(ctx -> {
+            final var dst = member(ctx);
+            ctx.expect('=', true);
+            final var src = expression(ctx);
+
+            return new EslStoreExpression(dst, src);
+        }).parse(context);
+    }
+
     protected @NotNull EslExpression member(final @NotNull Context context) throws Unroll {
         return wrap(ctx -> {
             final var name = name(ctx);
@@ -69,16 +79,6 @@ public class EslGrammar extends Grammar<EslExpression> {
                 object = new EslMemberExpression(object, segment.value());
 
             return object;
-        }).parse(context);
-    }
-
-    protected @NotNull EslStoreExpression store(final @NotNull Context context) throws Unroll {
-        return wrap(ctx -> {
-            final var dst = member(ctx);
-            context.expect('=', true);
-            final var src = expression(ctx);
-
-            return new EslStoreExpression(dst, src);
         }).parse(context);
     }
 

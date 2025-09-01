@@ -1,32 +1,18 @@
 package io.scriptor.eswin.component;
 
-import io.scriptor.eswin.esl.EslFrame;
-import io.scriptor.eswin.esl.EslGrammar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.event.ActionListener;
+
+import static io.scriptor.eswin.util.DynamicUtil.*;
 
 @Component("button")
 public class ButtonComponent extends ComponentBase {
 
     private final JButton button;
+    private final String[] segments;
 
-    private static @NotNull ActionListener getAction(
-            final @NotNull String action,
-            final @Nullable ComponentBase container
-    ) {
-        final var grammar    = new EslGrammar();
-        final var expression = grammar.parse(action);
-
-        System.out.println(expression);
-
-        return event -> {
-            final var frame = new EslFrame(container, event);
-            expression.evaluate(frame);
-        };
-    }
 
     public ButtonComponent(
             final @Nullable ComponentBase container,
@@ -35,27 +21,28 @@ public class ButtonComponent extends ComponentBase {
     ) {
         super(container, attributes, text);
 
-        button = new JButton(text);
+        final var expressions = getSegments(text);
 
-        if (attributes.has("tooltip"))
+        button = new JButton();
+        segments = new String[expressions.length];
+
+        observeSegments(container, expressions, (index, value) -> {
+            segments[index] = value.toString();
+            button.setText(String.join("", segments));
+        });
+
+        if (attributes.has("tooltip")) {
             button.setToolTipText(attributes.get("tooltip"));
+        }
 
         if (attributes.has("action")) {
-            button.addActionListener(getAction(attributes.get("action"), container));
+            button.addActionListener(getActionListener(container, attributes.get("action")));
         }
     }
 
     @Override
     public @NotNull JButton getJRoot() {
         return button;
-    }
-
-    public @NotNull String getText() {
-        return button.getText();
-    }
-
-    public void setText(final @NotNull String text) {
-        button.setText(text);
     }
 
     public boolean isEnabled() {

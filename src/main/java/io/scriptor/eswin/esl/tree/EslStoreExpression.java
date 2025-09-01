@@ -4,6 +4,8 @@ import io.scriptor.eswin.esl.EslFrame;
 import io.scriptor.eswin.esl.runtime.Value;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.Consumer;
+
 public record EslStoreExpression(@NotNull EslExpression dst, @NotNull EslExpression src) implements EslExpression {
 
     @Override

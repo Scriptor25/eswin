@@ -5,10 +5,14 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
+import static io.scriptor.eswin.util.DynamicUtil.getSegments;
+import static io.scriptor.eswin.util.DynamicUtil.observeSegments;
+
 @Component("label")
 public class LabelComponent extends ComponentBase {
 
-    private final JLabel root;
+    private final JLabel label;
+    private final String[] segments;
 
     public LabelComponent(
             final @Nullable ComponentBase container,
@@ -17,23 +21,24 @@ public class LabelComponent extends ComponentBase {
     ) {
         super(container, attributes, text);
 
-        root = new JLabel();
+        final var expressions = getSegments(text);
 
-        if (text.startsWith("$")) {
-            if (container == null)
-                throw new IllegalStateException();
+        label = new JLabel();
+        segments = new String[expressions.length];
 
-            container.observe(text.substring(1), value -> root.setText(value.toString()));
-        }
+        observeSegments(container, expressions, (index, value) -> {
+            segments[index] = value.toString();
+            label.setText(String.join("", segments));
+        });
 
         if (attributes.has("halign"))
-            root.setHorizontalAlignment(Constants.getSwing(attributes.get("halign")));
+            label.setHorizontalAlignment(Constants.getSwing(attributes.get("halign")));
         if (attributes.has("valign"))
-            root.setVerticalAlignment(Constants.getSwing(attributes.get("valign")));
+            label.setVerticalAlignment(Constants.getSwing(attributes.get("valign")));
     }
 
     @Override
     public @NotNull JLabel getJRoot() {
-        return root;
+        return label;
     }
 }
