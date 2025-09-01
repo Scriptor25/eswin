@@ -1,9 +1,9 @@
-package io.scriptor.eswin.context;
+package io.scriptor.eswin.registry;
 
 import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.ComponentBase;
-import io.scriptor.eswin.xml.document.Attribute;
-import io.scriptor.eswin.xml.document.Element;
+import io.scriptor.eswin.xml.XmlAttribute;
+import io.scriptor.eswin.xml.XmlElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,11 +12,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-public class Context {
+public class Registry {
 
     private final Map<String, ComponentData> components = new HashMap<>();
 
-    public Context() {
+    public Registry() {
     }
 
     public void put(final @NotNull String name, final @NotNull ComponentData component) {
@@ -37,7 +37,7 @@ public class Context {
         return instantiate(null, name, new AttributeSet(), "");
     }
 
-    public @NotNull ComponentBase instantiate(final @Nullable ComponentBase container, final @NotNull Element element) {
+    public @NotNull ComponentBase instantiate(final @Nullable ComponentBase container, final @NotNull XmlElement element) {
         final var instance = instantiate(container, element.name(), element.attributes(), element.text());
 
         element.elements()
@@ -50,7 +50,7 @@ public class Context {
     public @NotNull ComponentBase instantiate(
             final @Nullable ComponentBase container,
             final @NotNull String name,
-            final @NotNull Attribute[] attributes,
+            final @NotNull XmlAttribute[] attributes,
             final @NotNull String text
     ) {
         final var set = new AttributeSet();

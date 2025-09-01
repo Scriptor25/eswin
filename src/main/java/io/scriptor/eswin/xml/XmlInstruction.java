@@ -1,8 +1,8 @@
-package io.scriptor.eswin.xml.document;
+package io.scriptor.eswin.xml;
 
 import org.jetbrains.annotations.NotNull;
 
-public record Instruction(String name, Attribute[] attributes) implements Printable {
+public record XmlInstruction(String name, XmlAttribute[] attributes) implements XmlPrintable {
 
     @Override
     public @NotNull String toString() {
@@ -16,7 +16,7 @@ public record Instruction(String name, Attribute[] attributes) implements Printa
         for (final var attribute : attributes) {
             builder.append(' ').append(attribute.stringify(0));
         }
-        builder.append(" ?>");
+        builder.append("?>");
         return builder.toString();
     }
 }

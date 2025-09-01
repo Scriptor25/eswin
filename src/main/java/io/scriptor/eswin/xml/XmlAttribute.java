@@ -1,8 +1,8 @@
-package io.scriptor.eswin.xml.document;
+package io.scriptor.eswin.xml;
 
 import org.jetbrains.annotations.NotNull;
 
-public record Text(String value) implements ElementBase {
+public record XmlAttribute(String name, String value) implements XmlPrintable {
 
     @Override
     public @NotNull String toString() {
@@ -11,6 +11,6 @@ public record Text(String value) implements ElementBase {
 
     @Override
     public @NotNull String stringify(final int depth) {
-        return value;
+        return "%s=\"%s\"".formatted(name, value);
     }
 }

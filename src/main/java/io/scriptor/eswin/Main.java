@@ -3,10 +3,10 @@ package io.scriptor.eswin;
 import com.formdev.flatlaf.FlatDarculaLaf;
 import io.scriptor.eswin.component.*;
 import io.scriptor.eswin.component.Component;
-import io.scriptor.eswin.context.ComponentData;
-import io.scriptor.eswin.context.Context;
-import io.scriptor.eswin.xml.Parser;
-import io.scriptor.eswin.xml.document.Document;
+import io.scriptor.eswin.registry.ComponentData;
+import io.scriptor.eswin.registry.Registry;
+import io.scriptor.eswin.xml.XmlGrammar;
+import io.scriptor.eswin.xml.XmlDocument;
 import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
@@ -42,7 +42,7 @@ public class Main {
             return;
         }
 
-        final var context = new Context();
+        final var context = new Registry();
 
         // TODO: load all classes, filter classes for @Component annotation, load layout for components, registers classes in context
         final var classes = List.of(PanelComponent.class,
@@ -51,10 +51,12 @@ public class Main {
                                     HelloWorldComponent.class,
                                     AppComponent.class);
 
+        final var grammar = new XmlGrammar();
+
         for (final var type : classes) {
             final var component = type.getAnnotation(Component.class);
 
-            final Document layout;
+            final XmlDocument layout;
             if (component.layout().isEmpty()) {
                 layout = null;
             } else {
@@ -62,8 +64,7 @@ public class Main {
                     if (stream == null)
                         throw new FileNotFoundException();
 
-                    final var parser = new Parser(stream);
-                    layout = parser.parse();
+                    layout = grammar.parse(stream);
 
                 } catch (final IOException e) {
                     e.printStackTrace(System.err);

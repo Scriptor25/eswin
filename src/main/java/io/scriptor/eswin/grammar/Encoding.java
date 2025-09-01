@@ -1,4 +1,4 @@
-package io.scriptor.eswin.xml;
+package io.scriptor.eswin.grammar;
 
 import org.jetbrains.annotations.NotNull;
 

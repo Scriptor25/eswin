@@ -14,7 +14,9 @@ import java.util.TimerTask;
 public class HelloWorldComponent extends ComponentBase {
 
     private final String message;
-    private String status;
+
+    private String text = "Press me!";
+    private String status = "";
 
     public HelloWorldComponent(
             final @Nullable ComponentBase container,
@@ -24,14 +26,26 @@ public class HelloWorldComponent extends ComponentBase {
         super(container, attributes, text);
 
         this.message = attributes.get("message");
+
         notify("message", this.message);
+        notify("text", this.text);
+        notify("status", this.status);
     }
 
     public @NotNull String message() {
         return message;
     }
 
-    public @Nullable String status() {
+    public @NotNull String text() {
+        return text;
+    }
+
+    public void text(final @NotNull String text) {
+        this.text = text;
+        notify("text", this.text);
+    }
+
+    public @NotNull String status() {
         return status;
     }
 
@@ -42,32 +56,19 @@ public class HelloWorldComponent extends ComponentBase {
 
     public void example(final @NotNull ActionEvent event) {
         final var button = get("press-me", ButtonComponent.class);
-        final var text   = button.getText();
 
         if (!button.isEnabled())
             return;
 
         button.setEnabled(false);
-        button.setText("You pressed me!");
+        text("You pressed me!");
 
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                button.setText(text);
+                text("Press me!");
                 button.setEnabled(true);
             }
         }, 1000L);
-    }
-
-    public void first(final @NotNull ActionEvent event) {
-        status("pressed first button");
-    }
-
-    public void second(final @NotNull ActionEvent event) {
-        status("pressed second button");
-    }
-
-    public void third(final @NotNull ActionEvent event) {
-        status("pressed third button");
     }
 }

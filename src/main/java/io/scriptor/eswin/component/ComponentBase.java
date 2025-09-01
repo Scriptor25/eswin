@@ -31,6 +31,10 @@ public abstract class ComponentBase {
         this.root = root;
     }
 
+    public @Nullable ComponentBase getRoot() {
+        return root;
+    }
+
     public @Nullable JComponent getJRoot() {
         if (root == null)
             return null;

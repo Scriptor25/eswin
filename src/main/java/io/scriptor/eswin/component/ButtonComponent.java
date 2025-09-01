@@ -1,13 +1,12 @@
 package io.scriptor.eswin.component;
 
+import io.scriptor.eswin.esl.EslFrame;
+import io.scriptor.eswin.esl.EslGrammar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 @Component("button")
 public class ButtonComponent extends ComponentBase {
@@ -18,45 +17,14 @@ public class ButtonComponent extends ComponentBase {
             final @NotNull String action,
             final @Nullable ComponentBase container
     ) {
-        final Class<?> loadedClass;
-        final String   functionName;
-        final Object   self;
+        final var grammar    = new EslGrammar();
+        final var expression = grammar.parse(action);
 
-        if (action.startsWith("this.")) {
-            if (container == null)
-                throw new IllegalStateException();
-
-            self = container;
-
-            loadedClass = container.getClass();
-            functionName = action.substring(5);
-        } else {
-            self = null;
-
-            final var functionIndex = action.lastIndexOf('.');
-            final var className     = action.substring(0, functionIndex);
-            functionName = action.substring(functionIndex + 1);
-
-            try {
-                loadedClass = ClassLoader.getSystemClassLoader().loadClass(className);
-            } catch (final ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        final Method loadedFunction;
-        try {
-            loadedFunction = loadedClass.getMethod(functionName, ActionEvent.class);
-        } catch (final NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
+        System.out.println(expression);
 
         return event -> {
-            try {
-                loadedFunction.invoke(self, event);
-            } catch (final IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
+            final var frame = new EslFrame(container, event);
+            expression.evaluate(frame);
         };
     }
 
@@ -72,8 +40,9 @@ public class ButtonComponent extends ComponentBase {
         if (attributes.has("tooltip"))
             button.setToolTipText(attributes.get("tooltip"));
 
-        if (attributes.has("action"))
+        if (attributes.has("action")) {
             button.addActionListener(getAction(attributes.get("action"), container));
+        }
     }
 
     @Override

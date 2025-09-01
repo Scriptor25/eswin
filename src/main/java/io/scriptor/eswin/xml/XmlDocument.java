@@ -1,10 +1,8 @@
-package io.scriptor.eswin.xml.document;
+package io.scriptor.eswin.xml;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-
-public record Document(Collection<Instruction> instructions, Element root) implements Printable {
+public record XmlDocument(@NotNull XmlInstruction[] instructions, @NotNull XmlElement root) implements XmlPrintable {
 
     @Override
     public @NotNull String toString() {
