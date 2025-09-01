@@ -23,6 +23,12 @@
             <artifactId>annotations</artifactId>
             <version>24.0.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.6</version>
+        </dependency>
     </dependencies>
 
     <build>

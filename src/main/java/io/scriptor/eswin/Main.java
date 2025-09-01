@@ -1,5 +1,6 @@
 package io.scriptor.eswin;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
 import io.scriptor.eswin.component.*;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.context.ComponentData;
@@ -18,6 +19,9 @@ import java.util.List;
 public class Main {
 
     public static void main(final @NotNull String @NotNull [] args) {
+
+        FlatDarculaLaf.setup();
+
         final var environment   = GraphicsEnvironment.getLocalGraphicsEnvironment();
         final var device        = environment.getDefaultScreenDevice();
         final var configuration = device.getDefaultConfiguration();
