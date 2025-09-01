@@ -5,8 +5,8 @@ import io.scriptor.eswin.component.*;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.registry.ComponentData;
 import io.scriptor.eswin.registry.Registry;
-import io.scriptor.eswin.xml.XmlGrammar;
 import io.scriptor.eswin.xml.XmlDocument;
+import io.scriptor.eswin.xml.XmlGrammar;
 import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
@@ -79,5 +79,9 @@ public class Main {
         frame.add(app.getJRoot());
 
         frame.setVisible(true);
+    }
+
+    public static void example() {
+        System.out.println("Lorem ipsum");
     }
 }

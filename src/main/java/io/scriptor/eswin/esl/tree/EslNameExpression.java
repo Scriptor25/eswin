@@ -6,8 +6,6 @@ import io.scriptor.eswin.esl.runtime.ObjectValue;
 import io.scriptor.eswin.esl.runtime.Value;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Consumer;
-
 public record EslNameExpression(@NotNull String value) implements EslExpression {
 
     @Override
