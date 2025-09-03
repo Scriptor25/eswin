@@ -1,40 +1,43 @@
 package io.scriptor.eswin.grammar;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class Unroll extends Throwable {
 
-    private static String substring(final @NotNull String string, int begin, int end) {
-        begin = Math.max(begin, 0);
-        end = Math.min(end, string.length());
-        return string.substring(begin, end);
+    private static String message(final @NotNull String filename, final int @NotNull [] codepoints, final int index) {
+        int row = 1, col = 1;
+        for (int i = 0; i < index; ++i)
+            if (codepoints[i] == '\n') {
+                row++;
+                col = 1;
+            } else {
+                col++;
+            }
+        return "at %s:%d:%d".formatted(filename, row, col);
     }
 
     public final int index;
 
     public Unroll(final @NotNull Context context, final int index) {
-        this(context, index, null);
+        this(context.filename(), context.buffer(), index);
     }
 
-    public Unroll(final @NotNull Context context, final int index, final @Nullable Throwable cause) {
-        this(context.buffer(), index, cause);
+    public Unroll(final @NotNull Context context, final int index, final @NotNull Throwable cause) {
+        this(context.filename(), context.buffer(), index, cause);
     }
 
-    public Unroll(final int @NotNull [] codepoints, final int index) {
-        this(codepoints, index, null);
+    public Unroll(final @NotNull String filename, final int @NotNull [] codepoints, final int index) {
+        super(message(filename, codepoints, index));
+        this.index = index;
     }
 
-    public Unroll(final int @NotNull [] codepoints, final int index, final @Nullable Throwable cause) {
-        this(new String(codepoints, 0, codepoints.length), index, cause);
-    }
-
-    public Unroll(final @NotNull String data, final int index, final Throwable cause) {
-        super("%s[%s]%s".formatted(
-                      substring(data, index - 5, index),
-                      substring(data, index, index + 1),
-                      substring(data, index + 1, index + 5)),
-              cause);
+    public Unroll(
+            final @NotNull String filename,
+            final int @NotNull [] codepoints,
+            final int index,
+            final @NotNull Throwable cause
+    ) {
+        super(message(filename, codepoints, index), cause);
         this.index = index;
     }
 }

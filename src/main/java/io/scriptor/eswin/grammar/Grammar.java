@@ -13,33 +13,38 @@ public abstract class Grammar<R> {
 
     protected abstract R parseRoot(final @NotNull Context context) throws Unroll;
 
-    public R parse(final int @NotNull [] buffer, final int offset, final int length) {
-        final var context = new Context(buffer, offset, length);
+    public R parse(final @NotNull String filename, final int @NotNull [] buffer, final int offset, final int length) {
+        final var context = new Context(filename, buffer, offset, length);
         return parse(context);
     }
 
-    public R parse(final @NotNull String string, final int offset, final int length) {
-        final var context = new Context(string, offset, length);
+    public R parse(final @NotNull String filename, final @NotNull String string, final int offset, final int length) {
+        final var context = new Context(filename, string, offset, length);
         return parse(context);
     }
 
-    public R parse(final @NotNull InputStream stream, final int offset, final int length) throws IOException {
-        final var context = new Context(stream, offset, length);
+    public R parse(
+            final @NotNull String filename,
+            final @NotNull InputStream stream,
+            final int offset,
+            final int length
+    ) throws IOException {
+        final var context = new Context(filename, stream, offset, length);
         return parse(context);
     }
 
-    public R parse(final int @NotNull [] buffer) {
-        final var context = new Context(buffer);
+    public R parse(final @NotNull String filename, final int @NotNull [] buffer) {
+        final var context = new Context(filename, buffer);
         return parse(context);
     }
 
-    public R parse(final @NotNull String string) {
-        final var context = new Context(string);
+    public R parse(final @NotNull String filename, final @NotNull String string) {
+        final var context = new Context(filename, string);
         return parse(context);
     }
 
-    public R parse(final @NotNull InputStream stream) throws IOException {
-        final var context = new Context(stream);
+    public R parse(final @NotNull String filename, final @NotNull InputStream stream) throws IOException {
+        final var context = new Context(filename, stream);
         return parse(context);
     }
 
@@ -109,6 +114,7 @@ public abstract class Grammar<R> {
     public static <T> T parseUnionOf(final @NotNull Context context, final @NotNull Rule<? extends T>... rules)
             throws Unroll {
         final var mark = context.index();
+
         for (final var rule : rules) {
             try {
                 return rule.parse(context);
@@ -116,6 +122,7 @@ public abstract class Grammar<R> {
                 context.index(unroll.index);
             }
         }
+
         throw new Unroll(context, mark);
     }
 }

@@ -1,5 +1,8 @@
-package io.scriptor.eswin.component;
+package io.scriptor.eswin.impl;
 
+import io.scriptor.eswin.component.AttributeSet;
+import io.scriptor.eswin.component.Component;
+import io.scriptor.eswin.component.ComponentBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,7 +58,7 @@ public class HelloWorldComponent extends ComponentBase {
     }
 
     public void example(final @NotNull ActionEvent event) {
-        final var button = get("press-me", ButtonComponent.class);
+        final var button = getChild("press-me", ButtonComponent.class);
 
         if (!button.isEnabled())
             return;

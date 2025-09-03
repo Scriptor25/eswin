@@ -12,14 +12,15 @@ import java.util.Map;
 public class XmlGrammar extends Grammar<XmlDocument> {
 
     /*
-     * document    = instruction* root
-     * instruction = '<' '?' identifier attribute* '?' '>'
-     * root        = '<' identifier attribute* '>' ( root | text )* '<' '/' identifier '>'
+     * document    = instruction* element
+     * instruction = '<?' identifier attribute* '?>'
+     * element     = '<' identifier attribute* '>' ( element | text | cdata )* '</' identifier '>'
      * attribute   = identifier '=' string
      * string      = '"' (!'"')* '"'
      * text        = ( whitespace | identifier | symbol )+
      * symbol      = '&' identifier ';'
      * identifier  = ( digit | letter | emoji | ':' | '-' | '.' | '_' )+
+     * cdata       = '<![CDATA[' (!']') ']]>'
      */
 
     protected static boolean isIdentifier(final int character) {
@@ -54,46 +55,69 @@ public class XmlGrammar extends Grammar<XmlDocument> {
     }
 
     protected XmlInstruction instruction(final @NotNull Context context) throws Unroll {
+        context.whitespace();
         return wrap(ctx -> {
-            ctx.expect('<', true);
-            ctx.expect('?', false);
+            ctx.expect("<?");
 
             final var name       = identifier(ctx);
             final var attributes = parseZeroOrMoreOf(ctx, this::attribute);
 
-            ctx.expect('?', true);
-            ctx.expect('>', false);
+            ctx.whitespace();
+            ctx.expect("?>");
 
             return new XmlInstruction(name, attributes.toArray(XmlAttribute[]::new));
         }).parse(context);
     }
 
     protected XmlElement element(final @NotNull Context context) throws Unroll {
+        context.whitespace();
         return wrap(ctx -> {
             final var mark = ctx.index();
 
-            ctx.expect('<', true);
+            ctx.expect('<');
+
             final var begin      = identifier(ctx);
             final var attributes = parseZeroOrMoreOf(ctx, this::attribute);
 
-            if (ctx.skipif('/', true)) {
-                ctx.expect('>', false);
+            ctx.whitespace();
+            if (ctx.skipif('/')) {
+                ctx.expect('>');
                 return new XmlElement(begin, attributes.toArray(XmlAttribute[]::new), new XmlBase[0]);
             }
 
-            ctx.expect('>', true);
+            ctx.expect('>');
+
             final Collection<XmlBase> children = parseZeroOrMoreOf(
                     ctx,
-                    context1 -> parseUnionOf(context1, this::element, this::text));
-            ctx.expect('<', true);
-            ctx.expect('/', false);
+                    context1 -> parseUnionOf(context1, this::element, this::cdata, this::text));
+
+            ctx.whitespace();
+            ctx.expect("</");
+
             final var end = identifier(ctx);
-            ctx.expect('>', true);
+
+            ctx.whitespace();
+            ctx.expect('>');
 
             if (!end.equals(begin))
                 throw new Unroll(ctx, mark);
 
             return new XmlElement(begin, attributes.toArray(XmlAttribute[]::new), children.toArray(XmlBase[]::new));
+        }).parse(context);
+    }
+
+    protected XmlText cdata(final @NotNull Context context) throws Unroll {
+        context.whitespace();
+        return wrap(ctx -> {
+            ctx.expect("<![CDATA[");
+
+            final var elements = parseZeroOrMoreOf(ctx, ctx1 -> ctx1.expectNot("]]>"));
+            ctx.expect("]]>");
+
+            final var codepoints = elements.stream().mapToInt(Integer::intValue).toArray();
+            final var value      = new String(codepoints, 0, codepoints.length);
+
+            return new XmlText(value);
         }).parse(context);
     }
 
@@ -119,9 +143,9 @@ public class XmlGrammar extends Grammar<XmlDocument> {
         return wrap(ctx -> {
             final var mark = ctx.index();
 
-            ctx.expect('&', false);
+            ctx.expect('&');
             final var name = identifier(ctx);
-            ctx.expect(';', false);
+            ctx.expect(';');
 
             if (!ENTITY_LOOKUP.containsKey(name))
                 throw new Unroll(ctx, mark);
@@ -131,10 +155,14 @@ public class XmlGrammar extends Grammar<XmlDocument> {
     }
 
     protected XmlAttribute attribute(final @NotNull Context context) throws Unroll {
+        context.whitespace();
         return wrap(ctx -> {
-            parseZeroOrMoreOf(ctx, this::whitespace);
             final var name = identifier(ctx);
-            ctx.expect('=', true);
+
+            ctx.whitespace();
+            ctx.expect('=');
+            ctx.whitespace();
+
             final var value = string(ctx);
 
             return new XmlAttribute(name, value);
@@ -156,20 +184,14 @@ public class XmlGrammar extends Grammar<XmlDocument> {
 
     protected String string(final @NotNull Context context) throws Unroll {
         return wrap(ctx -> {
-            ctx.expect('"', true);
+            ctx.expect('"');
             final var elements = parseZeroOrMoreOf(
                     ctx,
                     ctx1 -> parseUnionOf(ctx1, this::entity, ctx2 -> ctx2.expectNot('"')));
-            ctx.expect('"', false);
+            ctx.expect('"');
 
             final var codepoints = elements.stream().mapToInt(Integer::intValue).toArray();
             return new String(codepoints, 0, codepoints.length);
         }).parse(context);
-    }
-
-    protected int whitespace(final @NotNull Context context) throws Unroll {
-        if (!Character.isWhitespace(context.get()))
-            throw new Unroll(context, context.index());
-        return context.skip();
     }
 }

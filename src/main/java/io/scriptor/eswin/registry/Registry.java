@@ -37,12 +37,15 @@ public class Registry {
         return instantiate(null, name, new AttributeSet(), "");
     }
 
-    public @NotNull ComponentBase instantiate(final @Nullable ComponentBase container, final @NotNull XmlElement element) {
+    public @NotNull ComponentBase instantiate(
+            final @Nullable ComponentBase container,
+            final @NotNull XmlElement element
+    ) {
         final var instance = instantiate(container, element.name(), element.attributes(), element.text());
 
         element.elements()
                .map(e -> instantiate(container, e))
-               .forEach(instance::put);
+               .forEach(instance::putChild);
 
         return instance;
     }

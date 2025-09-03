@@ -26,6 +26,12 @@ public class AttributeSet {
         return attributes.get(key);
     }
 
+    public @NotNull String get(final @NotNull String key, final @NotNull String defaultValue) {
+        if (!attributes.containsKey(key))
+            return defaultValue;
+        return attributes.get(key);
+    }
+
     public int getInt(final @NotNull String key) {
         return Integer.parseInt(get(key));
     }

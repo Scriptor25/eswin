@@ -1,8 +1,8 @@
 package io.scriptor.eswin;
 
 import com.formdev.flatlaf.FlatDarculaLaf;
-import io.scriptor.eswin.component.*;
 import io.scriptor.eswin.component.Component;
+import io.scriptor.eswin.impl.*;
 import io.scriptor.eswin.registry.ComponentData;
 import io.scriptor.eswin.registry.Registry;
 import io.scriptor.eswin.xml.XmlDocument;
@@ -48,6 +48,8 @@ public class Main {
         final var classes = List.of(PanelComponent.class,
                                     ButtonComponent.class,
                                     LabelComponent.class,
+                                    EmbedComponent.class,
+                                    FragmentComponent.class,
                                     HelloWorldComponent.class,
                                     AppComponent.class);
 
@@ -64,7 +66,7 @@ public class Main {
                     if (stream == null)
                         throw new FileNotFoundException();
 
-                    layout = grammar.parse(stream);
+                    layout = grammar.parse(component.layout(), stream);
 
                 } catch (final IOException e) {
                     e.printStackTrace(System.err);
@@ -76,7 +78,7 @@ public class Main {
         }
 
         final var app = context.instantiate("app");
-        frame.add(app.getJRoot());
+        app.chain(frame);
 
         frame.setVisible(true);
     }

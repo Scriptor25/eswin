@@ -1,5 +1,9 @@
-package io.scriptor.eswin.component;
+package io.scriptor.eswin.impl;
 
+import io.scriptor.eswin.component.AttributeSet;
+import io.scriptor.eswin.component.Component;
+import io.scriptor.eswin.component.ComponentBase;
+import io.scriptor.eswin.component.Constants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,7 +27,7 @@ public class LabelComponent extends ComponentBase {
 
         final var expressions = getSegments(text);
 
-        label = new JLabel();
+        apply(label = new JLabel());
         segments = new String[expressions.length];
 
         observeSegments(container, expressions, (index, value) -> {
@@ -35,6 +39,11 @@ public class LabelComponent extends ComponentBase {
             label.setHorizontalAlignment(Constants.getSwing(attributes.get("halign")));
         if (attributes.has("valign"))
             label.setVerticalAlignment(Constants.getSwing(attributes.get("valign")));
+    }
+
+    @Override
+    public boolean hasJRoot() {
+        return true;
     }
 
     @Override

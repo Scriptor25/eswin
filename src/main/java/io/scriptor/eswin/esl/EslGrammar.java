@@ -38,19 +38,24 @@ public class EslGrammar extends Grammar<EslExpression> {
         return wrap(ctx -> {
             final var callee = member(ctx);
 
-            ctx.expect('(', true);
+            ctx.whitespace();
+            ctx.expect('(');
 
             final List<EslExpression> arguments = new ArrayList<>();
 
             arguments.addAll(parseZeroOrMoreOf(ctx, wrap(ctx1 -> {
                 final var argument = expression(ctx1);
-                ctx1.expect(',', true);
+
+                ctx1.whitespace();
+                ctx1.expect(',');
+
                 return argument;
             })));
 
             parseZeroOrOneOf(ctx, this::expression).ifPresent(arguments::add);
 
-            ctx.expect(')', true);
+            ctx.whitespace();
+            ctx.expect(')');
 
             return new EslCallExpression(callee, arguments.toArray(EslExpression[]::new));
         }).parse(context);
@@ -59,7 +64,10 @@ public class EslGrammar extends Grammar<EslExpression> {
     protected @NotNull EslStoreExpression store(final @NotNull Context context) throws Unroll {
         return wrap(ctx -> {
             final var dst = member(ctx);
-            ctx.expect('=', true);
+
+            ctx.whitespace();
+            ctx.expect('=');
+
             final var src = expression(ctx);
 
             return new EslStoreExpression(dst, src);
@@ -70,7 +78,8 @@ public class EslGrammar extends Grammar<EslExpression> {
         return wrap(ctx -> {
             final var name = name(ctx);
             final var segments = parseOneOrMoreOf(ctx, wrap(ctx1 -> {
-                ctx1.expect('.', true);
+                ctx1.whitespace();
+                ctx1.expect('.');
                 return name(ctx1);
             }));
 
@@ -83,12 +92,12 @@ public class EslGrammar extends Grammar<EslExpression> {
     }
 
     protected @NotNull EslNameExpression name(final @NotNull Context context) throws Unroll {
+        context.whitespace();
         return wrap(ctx -> {
-            parseZeroOrMoreOf(ctx, this::whitespace);
-            final var fst = parseUnionOf(ctx, this::letter, ctx1 -> ctx1.expect('_', false));
+            final var fst = parseUnionOf(ctx, this::letter, ctx1 -> ctx1.expect('_'));
             final var snd = parseZeroOrMoreOf(
                     ctx,
-                    ctx1 -> parseUnionOf(ctx1, this::letter, this::digit, ctx2 -> ctx2.expect('_', false)));
+                    ctx1 -> parseUnionOf(ctx1, this::letter, this::digit, ctx2 -> ctx2.expect('_')));
 
             final List<Integer> data = new ArrayList<>();
             data.add(fst);
@@ -106,10 +115,11 @@ public class EslGrammar extends Grammar<EslExpression> {
     }
 
     protected @NotNull EslConstantString constantString(final @NotNull Context context) throws Unroll {
+        context.whitespace();
         return wrap(ctx -> {
-            ctx.expect('"', true);
+            ctx.expect('"');
             final var data = parseZeroOrMoreOf(ctx, ctx1 -> ctx1.expectNot('"'));
-            ctx.expect('"', false);
+            ctx.expect('"');
 
             final var codepoints = data.stream().mapToInt(Integer::intValue).toArray();
             final var value      = new String(codepoints, 0, codepoints.length);
@@ -119,21 +129,23 @@ public class EslGrammar extends Grammar<EslExpression> {
     }
 
     protected @NotNull EslConstantChar constantChar(final @NotNull Context context) throws Unroll {
+        context.whitespace();
         return wrap(ctx -> {
-            ctx.expect('\'', true);
-            final var value = ctx.expect('\'', false);
-            ctx.expect('\'', false);
+            ctx.expect('\'');
+            final var value = ctx.expect('\'');
+            ctx.expect('\'');
 
             return new EslConstantChar(value);
         }).parse(context);
     }
 
     protected @NotNull EslConstantInt constantInt(final @NotNull Context context) throws Unroll {
+        context.whitespace();
         return wrap(ctx -> {
 
             final var data = parseUnionOf(
                     ctx,
-                    ctx1 -> List.of(ctx1.expect('0', true)),
+                    ctx1 -> List.of(ctx1.expect('0')),
                     wrap(ctx1 -> {
                         final List<Integer> digits = new ArrayList<>();
 
@@ -153,23 +165,20 @@ public class EslGrammar extends Grammar<EslExpression> {
     }
 
     protected @NotNull EslConstantFloat constantFloat(final @NotNull Context context) throws Unroll {
+        context.whitespace();
         return parseUnionOf(
                 context,
                 wrap(ctx -> {
-                    parseZeroOrMoreOf(ctx, this::whitespace);
-
                     final var fst = constantInt(ctx);
-                    ctx.expect('.', false);
+                    ctx.expect('.');
                     final var snd = parseZeroOrOneOf(ctx, this::constantInt);
 
                     final var string = "%d.%d".formatted(fst.value(), snd.map(EslConstantInt::value).orElse(0L));
                     return new EslConstantFloat(Double.parseDouble(string));
                 }),
                 wrap(ctx -> {
-                    parseZeroOrMoreOf(ctx, this::whitespace);
-
                     final var fst = parseZeroOrOneOf(ctx, this::constantInt);
-                    ctx.expect('.', false);
+                    ctx.expect('.');
                     final var snd = constantInt(ctx);
 
                     final var string = "%d.%d".formatted(fst.map(EslConstantInt::value).orElse(0L), snd.value());
@@ -195,12 +204,6 @@ public class EslGrammar extends Grammar<EslExpression> {
         final var mark = context.index();
         if (context.get() == '0' || !Character.isDigit(context.get()))
             throw new Unroll(context, mark);
-        return context.skip();
-    }
-
-    protected int whitespace(final @NotNull Context context) throws Unroll {
-        if (!Character.isWhitespace(context.get()))
-            throw new Unroll(context, context.index());
         return context.skip();
     }
 }

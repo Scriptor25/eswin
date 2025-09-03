@@ -1,5 +1,9 @@
-package io.scriptor.eswin.component;
+package io.scriptor.eswin.impl;
 
+import io.scriptor.eswin.component.AttributeSet;
+import io.scriptor.eswin.component.Component;
+import io.scriptor.eswin.component.ComponentBase;
+import io.scriptor.eswin.component.Constants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -9,7 +13,7 @@ import java.awt.*;
 @Component("panel")
 public class PanelComponent extends ComponentBase {
 
-    private final JPanel root;
+    private final JPanel panel;
 
     public PanelComponent(
             final @Nullable ComponentBase container,
@@ -18,10 +22,10 @@ public class PanelComponent extends ComponentBase {
     ) {
         super(container, attributes, text);
 
-        root = new JPanel();
+        apply(panel = new JPanel());
 
         if (Constants.DEBUG)
-            root.setBackground(new Color((float) Math.random(), (float) Math.random(), (float) Math.random()));
+            panel.setBackground(new Color((float) Math.random(), (float) Math.random(), (float) Math.random()));
 
         if (attributes.has("layout")) {
             switch (attributes.get("layout")) {
@@ -37,18 +41,18 @@ public class PanelComponent extends ComponentBase {
 
                     layout.setAlignOnBaseline(attributes.has("baseline"));
 
-                    root.setLayout(layout);
+                    panel.setLayout(layout);
                 }
                 case "box" -> {
                     final int axis;
                     if (attributes.has("axis"))
                         axis = Constants.getBoxLayout(attributes.get("axis"));
                     else
-                        axis = BoxLayout.Y_AXIS;
+                        axis = BoxLayout.PAGE_AXIS;
 
-                    final var layout = new BoxLayout(root, axis);
+                    final var layout = new BoxLayout(panel, axis);
 
-                    root.setLayout(layout);
+                    panel.setLayout(layout);
                 }
                 case "grid" -> {
                     final var layout = new GridLayout(1, 1, 0, 0);
@@ -62,7 +66,7 @@ public class PanelComponent extends ComponentBase {
                     if (attributes.has("vgap"))
                         layout.setVgap(attributes.getInt("vgap"));
 
-                    root.setLayout(layout);
+                    panel.setLayout(layout);
                 }
                 default -> throw new IllegalStateException();
             }
@@ -70,14 +74,20 @@ public class PanelComponent extends ComponentBase {
     }
 
     @Override
-    public @NotNull JPanel getJRoot() {
-        return root;
+    public boolean hasJRoot() {
+        return true;
     }
 
     @Override
-    public void put(final @NotNull String id, final @NotNull ComponentBase component) {
-        super.put(id, component);
+    public @NotNull JPanel getJRoot() {
+        return panel;
+    }
 
-        root.add(component.getJRoot());
+    @Override
+    public void putChild(final @NotNull String id, final @NotNull ComponentBase child) {
+        super.putChild(id, child);
+
+        if (child.hasJRoot())
+            panel.add(child.getJRoot());
     }
 }

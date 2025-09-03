@@ -8,56 +8,68 @@ import java.io.PushbackInputStream;
 
 public class Context {
 
+    private final String filename;
     private final int[] buffer;
+    private final int end;
     private int index;
-    private int end;
 
-    public Context(final int @NotNull [] buffer) {
-        this(buffer, 0, buffer.length);
+    public Context(final @NotNull String filename, final int @NotNull [] buffer) {
+        this(filename, buffer, 0, buffer.length);
     }
 
-    public Context(final @NotNull String string) {
+    public Context(final @NotNull String filename, final @NotNull String string) {
+        this.filename = filename;
         this.buffer = string.codePoints().toArray();
-        this.index = 0;
         this.end = this.buffer.length;
+        this.index = 0;
     }
 
-    public Context(final @NotNull InputStream stream) throws IOException {
+    public Context(final @NotNull String filename, final @NotNull InputStream stream) throws IOException {
         final var wrapped = new PushbackInputStream(stream);
         final var charset = Encoding.detect(wrapped);
         final var bytes   = wrapped.readAllBytes();
 
+        this.filename = filename;
         this.buffer = new String(bytes, charset).codePoints().toArray();
-        this.index = 0;
         this.end = this.buffer.length;
+        this.index = 0;
     }
 
-    public Context(final int @NotNull [] buffer, final int offset, final int length) {
+    public Context(final @NotNull String filename, final int @NotNull [] buffer, final int offset, final int length) {
+        this.filename = filename;
         this.buffer = buffer;
-        this.index = offset;
         this.end = offset + length;
+        this.index = offset;
     }
 
-    public Context(final @NotNull String string, final int offset) {
+    public Context(final @NotNull String filename, final @NotNull String string, final int offset) {
+        this.filename = filename;
         this.buffer = string.codePoints().toArray();
-        this.index = offset;
         this.end = this.buffer.length;
-    }
-
-    public Context(final @NotNull String string, final int offset, final int length) {
-        this.buffer = string.codePoints().toArray();
         this.index = offset;
-        this.end = offset + length;
     }
 
-    public Context(final @NotNull InputStream stream, final int offset, final int length) throws IOException {
+    public Context(final @NotNull String filename, final @NotNull String string, final int offset, final int length) {
+        this.filename = filename;
+        this.buffer = string.codePoints().toArray();
+        this.end = offset + length;
+        this.index = offset;
+    }
+
+    public Context(
+            final @NotNull String filename,
+            final @NotNull InputStream stream,
+            final int offset,
+            final int length
+    ) throws IOException {
         final var wrapped = new PushbackInputStream(stream);
         final var charset = Encoding.detect(wrapped);
         final var bytes   = wrapped.readAllBytes();
 
+        this.filename = filename;
         this.buffer = new String(bytes, charset).codePoints().toArray();
-        this.index = offset;
         this.end = offset + length;
+        this.index = offset;
     }
 
     public int index() {
@@ -66,6 +78,10 @@ public class Context {
 
     public int @NotNull [] buffer() {
         return buffer;
+    }
+
+    public @NotNull String filename() {
+        return filename;
     }
 
     public void index(final int index) {
@@ -84,30 +100,47 @@ public class Context {
         return buffer[index];
     }
 
-    public boolean skipif(final int codepoint, boolean ignoreWhitespace) {
-        if (ignoreWhitespace)
-            while (Character.isWhitespace(get()))
-                skip();
+    public boolean skipif(final int codepoint) {
         if (get() != codepoint)
             return false;
         skip();
         return true;
     }
 
-    public int expect(final int codepoint, boolean ignoreWhitespace) throws Unroll {
-        if (ignoreWhitespace)
-            while (Character.isWhitespace(get()))
-                skip();
-        if (get() != codepoint) {
-            throw new Unroll(buffer, index);
-        }
+    public int expect(final int codepoint) throws Unroll {
+        if (get() != codepoint)
+            throw new Unroll(filename, buffer, index);
         return skip();
     }
 
+    public @NotNull String expect(final @NotNull String string) throws Unroll {
+        final var mark = index;
+        for (final var codepoint : string.codePoints().toArray())
+            if (skip() != codepoint)
+                throw new Unroll(filename, buffer, mark);
+        return string;
+    }
+
     public int expectNot(final int codepoint) throws Unroll {
-        if (get() == codepoint) {
-            throw new Unroll(buffer, index);
-        }
+        if (get() == codepoint)
+            throw new Unroll(filename, buffer, index);
         return skip();
+    }
+
+    public int expectNot(final @NotNull String string) throws Unroll {
+        final var mark = index;
+        for (final var codepoint : string.codePoints().toArray()) {
+            final var cp = skip();
+            if (cp != codepoint) {
+                this.index = mark;
+                return skip();
+            }
+        }
+        throw new Unroll(filename, buffer, mark);
+    }
+
+    public void whitespace() {
+        while (Character.isWhitespace(get()))
+            skip();
     }
 }

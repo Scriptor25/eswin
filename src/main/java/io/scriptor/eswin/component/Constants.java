@@ -46,4 +46,15 @@ public class Constants {
             default -> throw new NoSuchElementException("no box layout constant '%s'".formatted(value));
         };
     }
+
+    public static float getAlignment(final @NotNull String value) {
+        return switch (value) {
+            case "top" -> JComponent.TOP_ALIGNMENT;
+            case "center" -> JComponent.CENTER_ALIGNMENT;
+            case "bottom" -> JComponent.BOTTOM_ALIGNMENT;
+            case "left" -> JComponent.LEFT_ALIGNMENT;
+            case "right" -> JComponent.RIGHT_ALIGNMENT;
+            default -> throw new NoSuchElementException("no alignment constant '%s'".formatted(value));
+        };
+    }
 }

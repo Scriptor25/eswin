@@ -23,7 +23,7 @@ public class DynamicUtil {
             final @NotNull String action
     ) {
         final var grammar    = new EslGrammar();
-        final var expression = grammar.parse(action);
+        final var expression = grammar.parse("<unknown>", action);
 
         return event -> {
             final var frame = new EslFrame(container, event);
@@ -33,21 +33,22 @@ public class DynamicUtil {
 
     public static @NotNull EslExpression[] getSegments(final @NotNull String text) {
         final var grammar = new EslGrammar();
-        final var context = new Context(text);
+        final var context = new Context("<unknown>", text);
 
         final var builder = new StringBuilder();
 
         final List<EslExpression> expressions = new ArrayList<>();
 
         while (context.get() >= 0) {
-            if (context.skipif('{', false)) {
+            if (context.skipif('{')) {
                 expressions.add(new EslConstantString(builder.toString()));
                 builder.delete(0, builder.length());
 
                 final var expression = grammar.parse(context);
                 expressions.add(expression);
 
-                if (!context.skipif('}', false))
+                context.whitespace();
+                if (!context.skipif('}'))
                     throw new IllegalStateException();
             } else {
                 builder.appendCodePoint(context.skip());

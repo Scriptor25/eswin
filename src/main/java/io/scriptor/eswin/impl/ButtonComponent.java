@@ -1,9 +1,13 @@
-package io.scriptor.eswin.component;
+package io.scriptor.eswin.impl;
 
+import io.scriptor.eswin.component.AttributeSet;
+import io.scriptor.eswin.component.Component;
+import io.scriptor.eswin.component.ComponentBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 
 import static io.scriptor.eswin.util.DynamicUtil.*;
 
@@ -22,22 +26,25 @@ public class ButtonComponent extends ComponentBase {
         super(container, attributes, text);
 
         final var expressions = getSegments(text);
-
-        button = new JButton();
         segments = new String[expressions.length];
+
+        apply(button = new JButton());
 
         observeSegments(container, expressions, (index, value) -> {
             segments[index] = value.toString();
             button.setText(String.join("", segments));
         });
 
-        if (attributes.has("tooltip")) {
-            button.setToolTipText(attributes.get("tooltip"));
-        }
-
         if (attributes.has("action")) {
             button.addActionListener(getActionListener(container, attributes.get("action")));
         }
+
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }
+
+    @Override
+    public boolean hasJRoot() {
+        return true;
     }
 
     @Override
