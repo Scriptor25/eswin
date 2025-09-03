@@ -27,7 +27,6 @@ public class Main {
         final var configuration = device.getDefaultConfiguration();
         final var frame         = new JFrame("ESWIN", configuration);
 
-        frame.setSize(400, 300);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         try (final var stream = ClassLoader.getSystemResourceAsStream("app.png")) {
@@ -51,7 +50,14 @@ public class Main {
                                     EmbedComponent.class,
                                     FragmentComponent.class,
                                     HelloWorldComponent.class,
-                                    AppComponent.class);
+                                    AppComponent.class,
+                                    SourcePanelComponent.class,
+                                    TextFieldComponent.class,
+                                    ExampleComponent.class,
+                                    DatabasePanelComponent.class,
+                                    SystemDatabasePanelComponent.class,
+                                    ActionPanelComponent.class,
+                                    RadioButtonComponent.class);
 
         final var grammar = new XmlGrammar();
 
@@ -77,9 +83,10 @@ public class Main {
             context.put(component.value(), new ComponentData(type, layout));
         }
 
-        final var app = context.instantiate("app");
-        app.chain(frame);
+        final var app = context.instantiate("example");
+        app.getJRoot().forEach(frame::add);
 
+        frame.pack();
         frame.setVisible(true);
     }
 

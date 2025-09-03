@@ -8,12 +8,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.util.stream.Stream;
 
 @Component("panel")
 public class PanelComponent extends ComponentBase {
 
     private final JPanel panel;
+    private final GridBagLayout layout;
 
     public PanelComponent(
             final @Nullable ComponentBase container,
@@ -24,70 +29,26 @@ public class PanelComponent extends ComponentBase {
 
         apply(panel = new JPanel());
 
+        panel.setLayout(layout = new GridBagLayout());
+
         if (Constants.DEBUG)
             panel.setBackground(new Color((float) Math.random(), (float) Math.random(), (float) Math.random()));
-
-        if (attributes.has("layout")) {
-            switch (attributes.get("layout")) {
-                case "flow" -> {
-                    final var layout = new FlowLayout();
-
-                    if (attributes.has("align"))
-                        layout.setAlignment(Constants.getSwing(attributes.get("align")));
-                    if (attributes.has("hgap"))
-                        layout.setHgap(attributes.getInt("hgap"));
-                    if (attributes.has("vgap"))
-                        layout.setVgap(attributes.getInt("vgap"));
-
-                    layout.setAlignOnBaseline(attributes.has("baseline"));
-
-                    panel.setLayout(layout);
-                }
-                case "box" -> {
-                    final int axis;
-                    if (attributes.has("axis"))
-                        axis = Constants.getBoxLayout(attributes.get("axis"));
-                    else
-                        axis = BoxLayout.PAGE_AXIS;
-
-                    final var layout = new BoxLayout(panel, axis);
-
-                    panel.setLayout(layout);
-                }
-                case "grid" -> {
-                    final var layout = new GridLayout(1, 1, 0, 0);
-
-                    if (attributes.has("rows"))
-                        layout.setRows(attributes.getInt("rows"));
-                    if (attributes.has("cols"))
-                        layout.setColumns(attributes.getInt("cols"));
-                    if (attributes.has("hgap"))
-                        layout.setHgap(attributes.getInt("hgap"));
-                    if (attributes.has("vgap"))
-                        layout.setVgap(attributes.getInt("vgap"));
-
-                    panel.setLayout(layout);
-                }
-                default -> throw new IllegalStateException();
-            }
-        }
     }
 
     @Override
-    public boolean hasJRoot() {
-        return true;
-    }
-
-    @Override
-    public @NotNull JPanel getJRoot() {
-        return panel;
+    public @NotNull Stream<JComponent> getJRoot() {
+        return Stream.of(panel);
     }
 
     @Override
     public void putChild(final @NotNull String id, final @NotNull ComponentBase child) {
         super.putChild(id, child);
 
-        if (child.hasJRoot())
-            panel.add(child.getJRoot());
+        final var constraints = child.getConstraints(new GridBagConstraints());
+
+        child.getJRoot().forEach(component -> {
+            panel.add(component);
+            layout.setConstraints(component, constraints);
+        });
     }
 }

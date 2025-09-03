@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.stream.Stream;
 
 import static io.scriptor.eswin.util.DynamicUtil.*;
 
@@ -16,7 +17,6 @@ public class ButtonComponent extends ComponentBase {
 
     private final JButton button;
     private final String[] segments;
-
 
     public ButtonComponent(
             final @Nullable ComponentBase container,
@@ -35,21 +35,15 @@ public class ButtonComponent extends ComponentBase {
             button.setText(String.join("", segments));
         });
 
-        if (attributes.has("action")) {
+        if (attributes.has("action"))
             button.addActionListener(getActionListener(container, attributes.get("action")));
-        }
 
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     @Override
-    public boolean hasJRoot() {
-        return true;
-    }
-
-    @Override
-    public @NotNull JButton getJRoot() {
-        return button;
+    public @NotNull Stream<JComponent> getJRoot() {
+        return Stream.of(button);
     }
 
     public boolean isEnabled() {

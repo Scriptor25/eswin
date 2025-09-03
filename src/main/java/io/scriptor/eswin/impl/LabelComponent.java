@@ -3,12 +3,13 @@ package io.scriptor.eswin.impl;
 import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
-import io.scriptor.eswin.component.Constants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.stream.Stream;
 
+import static io.scriptor.eswin.component.Constants.getSwing;
 import static io.scriptor.eswin.util.DynamicUtil.getSegments;
 import static io.scriptor.eswin.util.DynamicUtil.observeSegments;
 
@@ -35,19 +36,14 @@ public class LabelComponent extends ComponentBase {
             label.setText(String.join("", segments));
         });
 
-        if (attributes.has("halign"))
-            label.setHorizontalAlignment(Constants.getSwing(attributes.get("halign")));
-        if (attributes.has("valign"))
-            label.setVerticalAlignment(Constants.getSwing(attributes.get("valign")));
+        if (attributes.has("h-align"))
+            label.setHorizontalAlignment(getSwing(attributes.get("h-align")));
+        if (attributes.has("v-align"))
+            label.setVerticalAlignment(getSwing(attributes.get("v-align")));
     }
 
     @Override
-    public boolean hasJRoot() {
-        return true;
-    }
-
-    @Override
-    public @NotNull JLabel getJRoot() {
-        return label;
+    public @NotNull Stream<JComponent> getJRoot() {
+        return Stream.of(label);
     }
 }

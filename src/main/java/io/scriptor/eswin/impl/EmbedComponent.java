@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 @Component("embed")
 public class EmbedComponent extends ComponentBase {
@@ -51,12 +52,7 @@ public class EmbedComponent extends ComponentBase {
     }
 
     @Override
-    public boolean hasJRoot() {
-        return true;
-    }
-
-    @Override
-    public @NotNull JComponent getJRoot() {
-        return panel;
+    public @NotNull Stream<JComponent> getJRoot() {
+        return Stream.of(panel);
     }
 }

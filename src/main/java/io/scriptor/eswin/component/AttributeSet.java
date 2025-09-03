@@ -32,10 +32,6 @@ public class AttributeSet {
         return attributes.get(key);
     }
 
-    public int getInt(final @NotNull String key) {
-        return Integer.parseInt(get(key));
-    }
-
     @Override
     public String toString() {
         return attributes.toString();

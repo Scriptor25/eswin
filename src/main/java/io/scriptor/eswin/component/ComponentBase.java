@@ -4,13 +4,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static io.scriptor.eswin.component.Constants.getAlignment;
+import static io.scriptor.eswin.component.Constants.*;
 
 public abstract class ComponentBase {
 
@@ -36,9 +39,7 @@ public abstract class ComponentBase {
 
     public void setRoot(final @NotNull ComponentBase root) {
         this.root = root;
-
-        if (this.root.hasJRoot())
-            apply(this.root.getJRoot());
+        this.root.getJRoot().forEach(this::apply);
     }
 
     public @Nullable ComponentBase getRoot() {
@@ -46,27 +47,61 @@ public abstract class ComponentBase {
     }
 
 
-    public boolean hasJRoot() {
-        return root != null && root.hasJRoot();
-    }
-
-    public @NotNull JComponent getJRoot() {
+    public @NotNull Stream<JComponent> getJRoot() {
         if (root == null)
             throw new IllegalStateException();
         return root.getJRoot();
     }
 
     protected void apply(final @NotNull JComponent component) {
-        if (attributes.has("align-x")) {
+        if (attributes.has("align-x"))
             component.setAlignmentX(getAlignment(attributes.get("align-x")));
-        }
-        if (attributes.has("align-y")) {
+        if (attributes.has("align-y"))
             component.setAlignmentY(getAlignment(attributes.get("align-y")));
-        }
-        if (attributes.has("tooltip")) {
+        if (attributes.has("tooltip"))
             component.setToolTipText(attributes.get("tooltip"));
-        }
+
+        final var outside = attributes.has("border-title")
+                            ? new TitledBorder(attributes.get("border-title"))
+                            : null;
+
+        final var borderInsets = new Insets(0, 0, 0, 0);
+        final var inside = getInsets(attributes, "border-insets", borderInsets)
+                           ? new EmptyBorder(borderInsets)
+                           : null;
+
+        if (outside != null || inside != null)
+            component.setBorder(new CompoundBorder(outside, inside));
+
         component.setVisible(!attributes.has("hidden"));
+    }
+
+    public @NotNull GridBagConstraints getConstraints(final @NotNull GridBagConstraints constraints) {
+        if (attributes.has("anchor"))
+            constraints.anchor = getAnchor(attributes.get("anchor"));
+        if (attributes.has("fill"))
+            constraints.fill = getFill(attributes.get("fill"));
+        if (attributes.has("grid-width"))
+            constraints.gridwidth = getSize(attributes.get("grid-width"));
+        if (attributes.has("grid-height"))
+            constraints.gridheight = getSize(attributes.get("grid-height"));
+        if (attributes.has("grid-x"))
+            constraints.gridx = getSize(attributes.get("grid-x"));
+        if (attributes.has("grid-y"))
+            constraints.gridy = getSize(attributes.get("grid-y"));
+        final var insets = new Insets(0, 0, 0, 0);
+        if (getInsets(attributes, "insets", insets))
+            constraints.insets = insets;
+        if (attributes.has("pad-x"))
+            constraints.ipadx = Integer.parseUnsignedInt(attributes.get("pad-x"), 10);
+        if (attributes.has("pad-y"))
+            constraints.ipady = Integer.parseUnsignedInt(attributes.get("pad-y"), 10);
+        if (attributes.has("weight-x"))
+            constraints.weightx = Double.parseDouble(attributes.get("weight-x"));
+        if (attributes.has("weight-y"))
+            constraints.weighty = Double.parseDouble(attributes.get("weight-y"));
+
+        return constraints;
     }
 
     public @NotNull Stream<ComponentBase> getChildren() {
@@ -127,19 +162,11 @@ public abstract class ComponentBase {
             observer.accept(value);
     }
 
-    public void chain(final @NotNull Container container) {
-        if (root != null)
-            root.chain(container);
-        else
-            container.add(getJRoot());
-    }
-
     public boolean isVisible() {
-        return hasJRoot() && getJRoot().isVisible();
+        return getJRoot().anyMatch(JComponent::isVisible);
     }
 
     public void setVisible(final boolean visible) {
-        if (hasJRoot())
-            getJRoot().setVisible(visible);
+        getJRoot().forEach(component -> component.setVisible(visible));
     }
 }
