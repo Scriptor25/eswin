@@ -28,7 +28,7 @@ public class ClassScanner {
             switch (resource.getProtocol()) {
                 case "file" -> {
                     final var directory = new File(resource.toURI());
-                    findClasses(loader, classes, directory);
+                    findClasses(loader, classes, packageName, directory);
                 }
                 case "jar" -> {
                     final var filepath = resource.getPath().substring(5, resource.getPath().indexOf('!'));
@@ -44,6 +44,7 @@ public class ClassScanner {
     private static void findClasses(
             final @NotNull ClassLoader loader,
             final @NotNull Set<Class<?>> classes,
+            final @NotNull String packageName,
             final @NotNull File directory
     ) {
         Log.info("open directory '%s'", directory);
@@ -56,11 +57,11 @@ public class ClassScanner {
 
         for (final var file : files) {
             if (file.isDirectory()) {
-                findClasses(loader, classes, file);
+                findClasses(loader, classes, packageName + '.' + file.getName(), file);
                 continue;
             }
             if (file.getName().endsWith(".class")) {
-                addClass(loader, classes, directory.getPath());
+                addClass(loader, classes, packageName + '.' + file.getName());
             }
         }
     }
@@ -86,7 +87,7 @@ public class ClassScanner {
             final @NotNull Set<Class<?>> classes,
             final @NotNull String filename
     ) {
-        final var name = filename.replace('/', '.').substring(0, filename.lastIndexOf(".class"));
+        final var name = filename.substring(0, filename.lastIndexOf(".class")).replace('/', '.');
         try {
             final var cls = loader.loadClass(name);
             classes.add(cls);
