@@ -3,7 +3,7 @@ package io.scriptor.eswin.esl;
 import org.jetbrains.annotations.NotNull;
 
 @FunctionalInterface
-public interface EslSetter {
+public interface EslSetter<T> {
 
-    void set(final @NotNull Object value) throws Exception;
+    void set(final @NotNull T value) throws Exception;
 }

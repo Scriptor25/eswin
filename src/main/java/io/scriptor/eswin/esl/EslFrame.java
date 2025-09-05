@@ -1,21 +1,26 @@
 package io.scriptor.eswin.esl;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-public record EslFrame(@Nullable Object self, @Nullable Object event) {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
-    @Override
-    public @NotNull Object self() {
-        if (self == null)
-            throw new IllegalStateException();
-        return self;
+public final class EslFrame {
+
+    private final Map<String, Object> values = new HashMap<>();
+
+    public boolean has(final @NotNull String name) {
+        return values.containsKey(name);
     }
 
-    @Override
-    public @NotNull Object event() {
-        if (event == null)
-            throw new IllegalStateException();
-        return event;
+    public <T> @NotNull T get(final @NotNull String name, final @NotNull Class<T> type) {
+        if (!values.containsKey(name))
+            throw new NoSuchElementException(name);
+        return type.cast(values.get(name));
+    }
+
+    public void put(final @NotNull String name, final @NotNull Object value) {
+        values.put(name, value);
     }
 }

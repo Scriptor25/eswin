@@ -21,15 +21,15 @@ public class AppComponent extends ComponentBase {
     }
 
     public void swap() {
-        final var loremIpsum = getChild("lorem-ipsum", EmbedComponent.class);
-        final var xmlDocs    = getChild("xml-docs", EmbedComponent.class);
+        final var embed1 = getChild("embed1", EmbedComponent.class);
+        final var embed2 = getChild("embed2", EmbedComponent.class);
 
-        if (loremIpsum.isVisible()) {
-            loremIpsum.setVisible(false);
-            xmlDocs.setVisible(true);
+        if (embed1.isVisible()) {
+            embed1.setVisible(false);
+            embed2.setVisible(true);
         } else {
-            loremIpsum.setVisible(true);
-            xmlDocs.setVisible(false);
+            embed1.setVisible(true);
+            embed2.setVisible(false);
         }
     }
 }

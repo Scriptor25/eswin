@@ -3,7 +3,7 @@ package io.scriptor.eswin.util;
 import io.scriptor.eswin.component.ComponentBase;
 import io.scriptor.eswin.esl.EslFrame;
 import io.scriptor.eswin.esl.EslGrammar;
-import io.scriptor.eswin.esl.runtime.ConstantString;
+import io.scriptor.eswin.esl.runtime.EslConstantString;
 import io.scriptor.eswin.esl.tree.EslExpression;
 import io.scriptor.eswin.grammar.Context;
 import org.jetbrains.annotations.NotNull;
@@ -26,8 +26,11 @@ public class EslUtil {
         final var expression = grammar.parse("<unknown>", action);
 
         return event -> {
-            final var frame = new EslFrame(parent, event);
-            expression.evaluate(frame);
+            final var frame = new EslFrame();
+            if (parent != null)
+                frame.put("this", parent);
+            frame.put("event", event);
+            expression.evaluate(frame, void.class);
         };
     }
 
@@ -41,7 +44,7 @@ public class EslUtil {
 
         while (context.get() >= 0) {
             if (context.skipif('{')) {
-                expressions.add(new ConstantString(builder.toString()));
+                expressions.add(new EslConstantString(builder.toString()));
                 builder.delete(0, builder.length());
 
                 final var expression = grammar.parse(context);
@@ -56,7 +59,7 @@ public class EslUtil {
         }
 
         if (!builder.isEmpty()) {
-            expressions.add(new ConstantString(builder.toString()));
+            expressions.add(new EslConstantString(builder.toString()));
         }
 
         return expressions.toArray(EslExpression[]::new);
@@ -67,7 +70,9 @@ public class EslUtil {
             final @NotNull EslExpression[] expressions,
             final @NotNull SegmentObserver observer
     ) {
-        final var frame = new EslFrame(parent, null);
+        final var frame = new EslFrame();
+        if (parent != null)
+            frame.put("this", parent);
         for (int i = 0; i < expressions.length; ++i) {
             final var index = i;
             expressions[i].observe(frame, value -> observer.notify(index, value.toString()));

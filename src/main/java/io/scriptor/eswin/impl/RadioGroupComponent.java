@@ -40,14 +40,14 @@ public class RadioGroupComponent extends ActionComponentBase {
 
         getRadioButtons().forEach(child -> {
             if (!child.getId().equals(id)) {
-                child.getJRoot().setSelected(false);
+                child.setSelected(false);
                 return;
             }
 
             final var event = new ActionEvent(child.getJRoot(), ActionEvent.ACTION_PERFORMED, "");
             listeners.forEach(listener -> listener.actionPerformed(event));
 
-            child.getJRoot().setSelected(true);
+            child.setSelected(true);
         });
     }
 
@@ -69,7 +69,8 @@ public class RadioGroupComponent extends ActionComponentBase {
         if (child instanceof RadioButtonComponent radio) {
             if (!has("selected"))
                 setSelected(id);
-
+            else
+                radio.setSelected(id.equals(get("selected", "", String.class)));
             radio.addListener(_ -> setSelected(id));
         }
     }

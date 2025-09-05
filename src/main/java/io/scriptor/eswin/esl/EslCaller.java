@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @FunctionalInterface
-public interface EslCaller {
+public interface EslCaller<T> {
 
-    @Nullable Object call(final @NotNull Object[] arguments) throws Exception;
+    @Nullable T call(final @NotNull Object[] arguments) throws Exception;
 }

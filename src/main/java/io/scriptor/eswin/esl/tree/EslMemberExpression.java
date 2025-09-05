@@ -2,7 +2,7 @@ package io.scriptor.eswin.esl.tree;
 
 import io.scriptor.eswin.component.ComponentBase;
 import io.scriptor.eswin.esl.EslFrame;
-import io.scriptor.eswin.esl.runtime.Value;
+import io.scriptor.eswin.esl.runtime.EslValue;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
@@ -10,22 +10,20 @@ import java.util.function.Consumer;
 public record EslMemberExpression(@NotNull EslExpression object, @NotNull String member) implements EslExpression {
 
     @Override
-    public Value evaluate(final @NotNull EslFrame frame) {
+    public <T> @NotNull EslValue<T> evaluate(final @NotNull EslFrame frame, final @NotNull Class<T> type) {
         final var object = this.object.evaluate(frame);
-
-        return object.field(member);
+        return object.field(member, type);
     }
 
     @Override
-    public void observe(final @NotNull EslFrame frame, final @NotNull Consumer<Object> observer) {
-        final var object = this.object.evaluate(frame);
-        final var value  = object.value();
+    public <T> void observe(
+            final @NotNull EslFrame frame,
+            final @NotNull Consumer<T> observer,
+            final @NotNull Class<T> type
+    ) {
+        final var object    = this.object.evaluate(frame, ComponentBase.class);
+        final var component = object.value();
 
-        if (value instanceof ComponentBase component) {
-            component.observe(member, observer, Object.class);
-            return;
-        }
-
-        throw new UnsupportedOperationException();
+        component.observe(member, observer, type);
     }
 }

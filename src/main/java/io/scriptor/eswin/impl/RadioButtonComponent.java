@@ -44,4 +44,8 @@ public class RadioButtonComponent extends ActionComponentBase {
     public @NotNull JRadioButton getJRoot() {
         return root;
     }
+
+    public void setSelected(final boolean selected) {
+        root.setSelected(selected);
+    }
 }

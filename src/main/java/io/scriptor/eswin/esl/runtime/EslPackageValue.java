@@ -4,15 +4,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
 
-public record PackageValue(@NotNull String name) implements Value {
+public record EslPackageValue<T>(@NotNull String name) implements EslValue<T> {
 
     @Override
-    public @NotNull Value field(final @NotNull String name) {
-        return new PackageValue(this.name + '.' + name);
+    public <V> @NotNull EslValue<V> field(final @NotNull String name, final @NotNull Class<V> type) {
+        return new EslPackageValue<>(this.name + '.' + name);
     }
 
     @Override
-    public @NotNull Value call(final @NotNull Value[] arguments) {
+    public <V> @NotNull EslValue<V> call(final @NotNull EslValue<?>[] arguments, final @NotNull Class<V> type) {
         final var split   = name.lastIndexOf('.');
         final var clsName = name.substring(0, split);
         final var mtdName = name.substring(split + 1);
@@ -31,8 +31,8 @@ public record PackageValue(@NotNull String name) implements Value {
 
             final var result = mtd.invoke(null, values);
             if (result == null)
-                return new VoidValue();
-            return new ObjectValue(result);
+                return new EslVoidValue<>();
+            return new EslObjectValue<>(type.cast(result));
         } catch (final ClassNotFoundException |
                        InvocationTargetException |
                        NoSuchMethodException |
