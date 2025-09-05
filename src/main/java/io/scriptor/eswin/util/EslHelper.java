@@ -13,9 +13,9 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EslUtil {
+public class EslHelper {
 
-    private EslUtil() {
+    private EslHelper() {
     }
 
     public static @NotNull ActionListener getActionListener(

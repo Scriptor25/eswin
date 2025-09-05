@@ -2,56 +2,110 @@ package io.scriptor.eswin.util;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.jar.JarFile;
 import java.util.stream.Stream;
 
 public class ClassScanner {
 
     private static void findClasses(
             final @NotNull ClassLoader loader,
-            final @NotNull Collection<Class<?>> classes,
+            final @NotNull Set<Class<?>> classes,
             final @NotNull String packageName
-    ) throws IOException, ClassNotFoundException {
-        try (final var packageStream = loader.getResourceAsStream(packageName.replace('.', '/'))) {
-            if (packageStream == null)
-                return;
+    ) throws IOException, URISyntaxException {
+        Log.info("open package '%s'", packageName);
 
-            findClasses(loader, classes, packageName, packageStream);
+        final var resources = loader.getResources(packageName.replace('.', '/'));
+        while (resources.hasMoreElements()) {
+            final var resource = resources.nextElement();
+            switch (resource.getProtocol()) {
+                case "file" -> {
+                    final var directory = new File(resource.toURI());
+                    findClasses(loader, classes, directory);
+                }
+                case "jar" -> {
+                    final var filepath = resource.getPath().substring(5, resource.getPath().indexOf('!'));
+                    try (final var jar = new JarFile(URLDecoder.decode(filepath, StandardCharsets.UTF_8))) {
+                        findClasses(loader, classes, jar);
+                    }
+                }
+                default -> Log.warn(" * unhandled protocol: '%s'", resource.getProtocol());
+            }
         }
     }
 
     private static void findClasses(
             final @NotNull ClassLoader loader,
-            final @NotNull Collection<Class<?>> classes,
-            final @NotNull String packageName,
-            final @NotNull InputStream packageStream
-    ) throws IOException, ClassNotFoundException {
-        final var reader = new BufferedReader(new InputStreamReader(packageStream));
-        for (String line; (line = reader.readLine()) != null; ) {
-            if (line.endsWith(".class")) {
-                final var name      = line.substring(0, line.lastIndexOf(".class"));
-                final var className = packageName.isEmpty() ? name : (packageName + '.' + name);
-                final var cls       = loader.loadClass(className);
-                classes.add(cls);
+            final @NotNull Set<Class<?>> classes,
+            final @NotNull File directory
+    ) {
+        Log.info("open directory '%s'", directory);
+
+        final var files = directory.listFiles();
+        if (files == null) {
+            Log.warn(" * no files in directory '%s'", directory);
+            return;
+        }
+
+        for (final var file : files) {
+            if (file.isDirectory()) {
+                findClasses(loader, classes, file);
                 continue;
             }
-            findClasses(loader, classes, packageName.isEmpty() ? line : (packageName + '.' + line));
+            if (file.getName().endsWith(".class")) {
+                addClass(loader, classes, directory.getPath());
+            }
         }
     }
 
-    private final Collection<Class<?>> classes;
+    private static void findClasses(
+            final @NotNull ClassLoader loader,
+            final @NotNull Set<Class<?>> classes,
+            final @NotNull JarFile jar
+    ) {
+        Log.info("open jar '%s'", jar.getName());
 
-    public ClassScanner() throws IOException, ClassNotFoundException {
-        classes = new ArrayList<>();
+        final var entries = jar.entries();
+        while (entries.hasMoreElements()) {
+            final var entry = entries.nextElement();
+            if (entry.getName().endsWith(".class")) {
+                addClass(loader, classes, entry.getName());
+            }
+        }
+    }
 
-        final var loader = ClassLoader.getSystemClassLoader();
-        findClasses(loader, classes, "");
+    private static void addClass(
+            final @NotNull ClassLoader loader,
+            final @NotNull Set<Class<?>> classes,
+            final @NotNull String filename
+    ) {
+        final var name = filename.replace('/', '.').substring(0, filename.lastIndexOf(".class"));
+        try {
+            final var cls = loader.loadClass(name);
+            classes.add(cls);
+
+            Log.info(" - %s", cls);
+        } catch (final ClassNotFoundException e) {
+            Log.warn(" * failed to load class '%s': %s", name, e);
+        }
+    }
+
+    private final Set<Class<?>> classes = new HashSet<>();
+
+    public ClassScanner(final @NotNull String... packageNames)
+            throws IOException, ClassNotFoundException, URISyntaxException {
+
+        final var loader = getClass().getClassLoader();
+        for (final var packageName : packageNames) {
+            findClasses(loader, classes, packageName);
+        }
     }
 
     public @NotNull Stream<Class<?>> stream() {

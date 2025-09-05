@@ -14,8 +14,8 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static io.scriptor.eswin.component.Constants.*;
-import static io.scriptor.eswin.util.EslUtil.getSegments;
-import static io.scriptor.eswin.util.EslUtil.observeSegments;
+import static io.scriptor.eswin.util.EslHelper.getSegments;
+import static io.scriptor.eswin.util.EslHelper.observeSegments;
 
 public abstract class ComponentBase {
 

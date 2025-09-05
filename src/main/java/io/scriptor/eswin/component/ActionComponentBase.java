@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 
-import static io.scriptor.eswin.util.EslUtil.getActionListener;
+import static io.scriptor.eswin.util.EslHelper.getActionListener;
 
 public abstract class ActionComponentBase extends ComponentBase {
 

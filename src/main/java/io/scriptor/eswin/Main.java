@@ -6,6 +6,7 @@ import io.scriptor.eswin.component.ComponentBase;
 import io.scriptor.eswin.registry.ComponentData;
 import io.scriptor.eswin.registry.Registry;
 import io.scriptor.eswin.util.ClassScanner;
+import io.scriptor.eswin.util.Log;
 import io.scriptor.eswin.xml.XmlDocument;
 import io.scriptor.eswin.xml.XmlGrammar;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 public class Main {
 
@@ -37,15 +39,15 @@ public class Main {
             frame.setIconImage(image);
 
         } catch (final IOException e) {
-            e.printStackTrace(System.err);
+            Log.warn(e.toString());
             return;
         }
 
         final ClassScanner scanner;
         try {
-            scanner = new ClassScanner();
-        } catch (final IOException | ClassNotFoundException e) {
-            e.printStackTrace(System.err);
+            scanner = new ClassScanner("io.scriptor.eswin");
+        } catch (final URISyntaxException | IOException | ClassNotFoundException e) {
+            Log.warn(e.toString());
             return;
         }
 
@@ -68,7 +70,7 @@ public class Main {
                            layout = grammar.parse(component.layout(), stream);
 
                        } catch (final IOException e) {
-                           e.printStackTrace(System.err);
+                           Log.warn(e.toString());
                            return;
                        }
                    }
@@ -84,6 +86,6 @@ public class Main {
     }
 
     public static void example() {
-        System.out.println("Lorem ipsum");
+        Log.info("Lorem ipsum");
     }
 }
