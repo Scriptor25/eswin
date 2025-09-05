@@ -16,4 +16,9 @@ public class SystemDatabasePanelComponent extends ComponentBase {
     ) {
         super(parent, attributes, text);
     }
+
+    public void select() {
+        final var component = getChild("selection", RadioGroupComponent.class);
+        final var selected  = component.get("selected", "", String.class);
+    }
 }

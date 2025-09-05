@@ -11,14 +11,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-import static io.scriptor.eswin.util.EslUtil.getSegments;
-import static io.scriptor.eswin.util.EslUtil.observeSegments;
-
 @Component("button")
 public class ButtonComponent extends ActionComponentBase {
 
     private final JButton root;
-    private final String[] segments;
 
     public ButtonComponent(
             final @Nullable ComponentBase parent,
@@ -27,17 +23,10 @@ public class ButtonComponent extends ActionComponentBase {
     ) {
         super(parent, attributes, text);
 
-        final var expressions = getSegments(text);
-        segments = new String[expressions.length];
-
         apply(root = new JButton());
-
-        observeSegments(parent, expressions, (index, value) -> {
-            segments[index] = value.toString();
-            root.setText(String.join("", segments));
-        });
-
         root.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        observe("#text", root::setText, String.class);
     }
 
     @Override

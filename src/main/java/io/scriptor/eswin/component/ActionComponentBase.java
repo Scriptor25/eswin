@@ -23,7 +23,7 @@ public abstract class ActionComponentBase extends ComponentBase {
         super.apply(component);
 
         if (getAttributes().has("action"))
-            addListener(getActionListener(getContainer(), getAttributes().get("action")));
+            addListener(getActionListener(getParent(), getAttributes().get("action")));
     }
 
     public abstract void addListener(final @NotNull ActionListener listener);

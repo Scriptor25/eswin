@@ -12,12 +12,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.function.Consumer;
 
 @Component("embed")
 public class EmbedComponent extends ComponentBase {
 
-    private final JFXPanel panel;
+    private final JFXPanel root;
 
     public EmbedComponent(
             final @Nullable ComponentBase parent,
@@ -26,7 +27,7 @@ public class EmbedComponent extends ComponentBase {
     ) {
         super(parent, attributes, text);
 
-        apply(panel = new JFXPanel());
+        apply(root = new JFXPanel());
 
         final Consumer<WebEngine> consumer;
         if (attributes.has("src")) {
@@ -46,12 +47,12 @@ public class EmbedComponent extends ComponentBase {
             consumer.accept(engine);
 
             final var scene = new Scene(view);
-            panel.setScene(scene);
+            root.setScene(scene);
         });
     }
 
     @Override
     public @NotNull JComponent getJRoot() {
-        return panel;
+        return root;
     }
 }

@@ -36,9 +36,9 @@ public class PanelComponent extends ComponentBase {
     }
 
     @Override
-    public void add(final @NotNull String id, final @NotNull ComponentBase child) {
-        super.add(id, child);
+    public void addChild(final @NotNull String id, final @NotNull ComponentBase child) {
+        super.addChild(id, child);
 
-        child.chainInto(panel, true);
+        child.render(panel, true);
     }
 }

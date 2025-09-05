@@ -16,4 +16,16 @@ public class SourcePanelComponent extends ComponentBase {
     ) {
         super(parent, attributes, text);
     }
+
+    public void name() {
+        final var component = getChild("name", TextFieldComponent.class);
+        final var text      = component.getText();
+        notify("name", text);
+    }
+
+    public void description() {
+        final var component = getChild("description", TextFieldComponent.class);
+        final var text      = component.getText();
+        notify("description", text);
+    }
 }

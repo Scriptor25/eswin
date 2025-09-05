@@ -1,7 +1,6 @@
 package io.scriptor.eswin.impl;
 
 import io.scriptor.eswin.component.AttributeSet;
-import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
 import org.jetbrains.annotations.NotNull;
@@ -16,5 +15,20 @@ public class ActionPanelComponent extends ComponentBase {
             final @NotNull String text
     ) {
         super(parent, attributes, text);
+    }
+
+    public void submit() {
+    }
+
+    public void cancel() {
+    }
+
+    public void help() {
+    }
+
+    public void advanced() {
+    }
+
+    public void options() {
     }
 }

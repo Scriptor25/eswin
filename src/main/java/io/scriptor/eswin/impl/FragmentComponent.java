@@ -20,7 +20,7 @@ public class FragmentComponent extends ComponentBase {
     }
 
     @Override
-    public void chainInto(final @NotNull Container container, final boolean constraint) {
-        getChildren().forEach(child -> child.chainInto(container, constraint));
+    public void render(final @NotNull Container container, final boolean constraint) {
+        getChildren().forEach(child -> child.render(container, constraint));
     }
 }

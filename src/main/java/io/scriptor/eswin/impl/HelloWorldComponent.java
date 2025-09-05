@@ -58,7 +58,7 @@ public class HelloWorldComponent extends ComponentBase {
     }
 
     public void example(final @NotNull ActionEvent event) {
-        final var button = get("press-me", ButtonComponent.class);
+        final var button = getChild("press-me", ButtonComponent.class);
 
         if (!button.isEnabled())
             return;

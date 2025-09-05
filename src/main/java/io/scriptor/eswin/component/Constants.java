@@ -7,13 +7,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
+import java.util.function.Function;
 
 public class Constants {
 
     public static final boolean DEBUG = false;
 
     @MagicConstant(valuesFromClass = SwingConstants.class)
-    public static int getSwing(final @NotNull String value) {
+    public static int parseSwing(final @NotNull String value) {
         return switch (value) {
             case "center" -> SwingConstants.CENTER;
             case "top" -> SwingConstants.TOP;
@@ -38,7 +39,7 @@ public class Constants {
         };
     }
 
-    public static float getAlignment(final @NotNull String value) {
+    public static float parseAlignment(final @NotNull String value) {
         return switch (value) {
             case "top" -> JComponent.TOP_ALIGNMENT;
             case "center" -> JComponent.CENTER_ALIGNMENT;
@@ -49,7 +50,7 @@ public class Constants {
         };
     }
 
-    public static int getAnchor(final @NotNull String value) {
+    public static int parseAnchor(final @NotNull String value) {
         return switch (value) {
             case "center" -> GridBagConstraints.CENTER;
             case "north" -> GridBagConstraints.NORTH;
@@ -81,7 +82,7 @@ public class Constants {
         };
     }
 
-    public static int getFill(final @NotNull String value) {
+    public static int parseFill(final @NotNull String value) {
         return switch (value) {
             case "none" -> GridBagConstraints.NONE;
             case "horizontal" -> GridBagConstraints.HORIZONTAL;
@@ -91,42 +92,52 @@ public class Constants {
         };
     }
 
-    public static int getSize(final @NotNull String value) {
+    public static int parseSize(final @NotNull String value) {
         return switch (value) {
             case "relative" -> GridBagConstraints.RELATIVE;
             case "remainder" -> GridBagConstraints.REMAINDER;
-            default -> Integer.parseUnsignedInt(value, 10);
+            default -> Integer.parseUnsignedInt(value);
         };
     }
 
-    public static boolean getInsets(
+    public static int parseOffset(final @NotNull String value) {
+        return value.equals("relative")
+               ? GridBagConstraints.RELATIVE
+               : Integer.parseUnsignedInt(value);
+    }
+
+    public static <T> boolean getComponents(
             final @NotNull AttributeSet attributes,
             final @NotNull String name,
-            final @NotNull Insets insets
+            final @NotNull String name0,
+            final @NotNull String name1,
+            final @NotNull T[] output,
+            final @NotNull Function<String, T> mapper
+    ) {
+        return getComponents(attributes, name, name0, name1, output, 0, mapper);
+    }
+
+    public static <T> boolean getComponents(
+            final @NotNull AttributeSet attributes,
+            final @NotNull String name,
+            final @NotNull String name0,
+            final @NotNull String name1,
+            final @NotNull T[] output,
+            final int offset,
+            final @NotNull Function<String, T> mapper
     ) {
         if (attributes.has(name)) {
             final var value = attributes.get(name);
             final var values = Arrays
                     .stream(value.trim().split("\\s+"))
-                    .mapToInt(Integer::parseInt)
-                    .toArray();
+                    .map(mapper)
+                    .toList();
 
-            switch (values.length) {
-                case 1 -> insets.top = insets.left = insets.bottom = insets.right = values[0];
+            switch (values.size()) {
+                case 1 -> output[offset] = output[offset + 1] = values.get(0);
                 case 2 -> {
-                    insets.top = insets.bottom = values[0];
-                    insets.left = insets.right = values[1];
-                }
-                case 3 -> {
-                    insets.top = values[0];
-                    insets.left = insets.right = values[1];
-                    insets.bottom = values[2];
-                }
-                case 4 -> {
-                    insets.top = values[0];
-                    insets.left = values[1];
-                    insets.bottom = values[2];
-                    insets.right = values[3];
+                    output[offset] = values.get(0);
+                    output[offset + 1] = values.get(1);
                 }
                 default -> throw new IllegalStateException();
             }
@@ -135,27 +146,144 @@ public class Constants {
         }
 
         var has = false;
-        if (attributes.has("%s-top".formatted(name))) {
-            final var value = attributes.get("%s-top".formatted(name));
-            insets.top = Integer.parseInt(value);
+        if (attributes.has(name0)) {
+            final var value = attributes.get(name0);
+            output[offset] = mapper.apply(value);
             has = true;
         }
-        if (attributes.has("%s-left".formatted(name))) {
-            final var value = attributes.get("%s-left".formatted(name));
-            insets.left = Integer.parseInt(value);
-            has = true;
-        }
-        if (attributes.has("%s-bottom".formatted(name))) {
-            final var value = attributes.get("%s-bottom".formatted(name));
-            insets.bottom = Integer.parseInt(value);
-            has = true;
-        }
-        if (attributes.has("%s-right".formatted(name))) {
-            final var value = attributes.get("%s-right".formatted(name));
-            insets.right = Integer.parseInt(value);
+        if (attributes.has(name1)) {
+            final var value = attributes.get(name1);
+            output[offset + 1] = mapper.apply(value);
             has = true;
         }
 
         return has;
+    }
+
+    public static <T> boolean getComponents(
+            final @NotNull AttributeSet attributes,
+            final @NotNull String name,
+            final @NotNull String name0,
+            final @NotNull String name1,
+            final @NotNull String name2,
+            final @NotNull String name3,
+            final @NotNull T[] output,
+            final @NotNull Function<String, T> mapper
+    ) {
+        if (attributes.has(name)) {
+            final var value = attributes.get(name);
+            final var values = Arrays
+                    .stream(value.trim().split("\\s+"))
+                    .map(mapper)
+                    .toList();
+
+            switch (values.size()) {
+                case 1 -> output[0] = output[1] = output[2] = output[3] = values.get(0);
+                case 2 -> {
+                    output[0] = output[2] = values.get(0);
+                    output[1] = output[3] = values.get(1);
+                }
+                case 3 -> {
+                    output[0] = values.get(0);
+                    output[1] = output[3] = values.get(1);
+                    output[2] = values.get(2);
+                }
+                case 4 -> {
+                    output[0] = values.get(0);
+                    output[1] = values.get(1);
+                    output[2] = values.get(2);
+                    output[3] = values.get(3);
+                }
+                default -> throw new IllegalStateException();
+            }
+
+            return true;
+        }
+
+        var has = false;
+        if (attributes.has(name0)) {
+            final var value = attributes.get(name0);
+            output[0] = mapper.apply(value);
+            has = true;
+        }
+        if (attributes.has(name1)) {
+            final var value = attributes.get(name1);
+            output[1] = mapper.apply(value);
+            has = true;
+        }
+        if (attributes.has(name2)) {
+            final var value = attributes.get(name2);
+            output[2] = mapper.apply(value);
+            has = true;
+        }
+        if (attributes.has(name3)) {
+            final var value = attributes.get(name3);
+            output[3] = mapper.apply(value);
+            has = true;
+        }
+
+        return has;
+    }
+
+    public static <T> boolean getComponents(
+            final @NotNull AttributeSet attributes,
+            final @NotNull String name,
+            final @NotNull String name01,
+            final @NotNull String name23,
+            final @NotNull String name0,
+            final @NotNull String name1,
+            final @NotNull String name2,
+            final @NotNull String name3,
+            final @NotNull T[] output,
+            final @NotNull Function<String, T> mapper01,
+            final @NotNull Function<String, T> mapper23
+    ) {
+        if (attributes.has(name)) {
+            final var value    = attributes.get(name);
+            final var segments = Arrays.stream(value.trim().split("\\s+")).toList();
+
+            switch (segments.size()) {
+                case 2 -> {
+                    output[0] = output[1] = mapper01.apply(segments.get(0));
+                    output[2] = output[3] = mapper23.apply(segments.get(1));
+                }
+                case 4 -> {
+                    output[0] = mapper01.apply(segments.get(0));
+                    output[1] = mapper01.apply(segments.get(1));
+                    output[2] = mapper23.apply(segments.get(2));
+                    output[3] = mapper23.apply(segments.get(3));
+                }
+                default -> throw new IllegalStateException();
+            }
+
+            return true;
+        }
+
+        var has = false;
+        has |= getComponents(attributes, name01, name0, name1, output, 0, mapper01);
+        has |= getComponents(attributes, name23, name2, name3, output, 2, mapper23);
+
+        return has;
+    }
+
+    public static boolean getInsets(
+            final @NotNull AttributeSet attributes,
+            final @NotNull String name,
+            final @NotNull Insets insets
+    ) {
+        final var output = new Integer[] { 0, 0, 0, 0 };
+        if (!getComponents(attributes,
+                           name,
+                           name + "-top",
+                           name + "-left",
+                           name + "-bottom",
+                           name + "-right",
+                           output,
+                           Integer::parseInt
+        ))
+            return false;
+
+        insets.set(output[0], output[1], output[2], output[3]);
+        return true;
     }
 }

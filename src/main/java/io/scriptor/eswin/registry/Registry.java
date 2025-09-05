@@ -46,7 +46,7 @@ public class Registry {
 
         element.elements()
                .map(e -> instantiate(parent, e))
-               .forEach(instance::add);
+               .forEach(instance::addChild);
 
         return instance;
     }

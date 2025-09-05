@@ -76,8 +76,8 @@ public class Main {
                    registry.put(component.value(), new ComponentData(cls, layout));
                });
 
-        final var app = registry.instantiate("example");
-        app.chainInto(frame, false);
+        final var app = registry.instantiate(args.length == 1 ? args[0] : "app");
+        app.render(frame, false);
 
         frame.pack();
         frame.setVisible(true);

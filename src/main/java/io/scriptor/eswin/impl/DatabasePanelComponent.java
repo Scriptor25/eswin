@@ -16,4 +16,16 @@ public class DatabasePanelComponent extends ComponentBase {
     ) {
         super(parent, attributes, text);
     }
+
+    public void select() {
+    }
+
+    public void create() {
+    }
+
+    public void repair() {
+    }
+
+    public void compact() {
+    }
 }

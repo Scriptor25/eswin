@@ -22,7 +22,7 @@ public record EslMemberExpression(@NotNull EslExpression object, @NotNull String
         final var value  = object.value();
 
         if (value instanceof ComponentBase component) {
-            component.observe(member, observer);
+            component.observe(member, observer, Object.class);
             return;
         }
 

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 
-import static io.scriptor.eswin.component.Constants.getSwing;
+import static io.scriptor.eswin.component.Constants.parseSwing;
 
 @Component("radio-button")
 public class RadioButtonComponent extends ActionComponentBase {
@@ -24,13 +24,15 @@ public class RadioButtonComponent extends ActionComponentBase {
     ) {
         super(parent, attributes, text);
 
-        apply(root = new JRadioButton(text));
+        apply(root = new JRadioButton());
 
         if (attributes.has("h-align"))
-            root.setHorizontalAlignment(getSwing(attributes.get("h-align")));
+            root.setHorizontalAlignment(parseSwing(attributes.get("h-align")));
 
         if (attributes.has("v-align"))
-            root.setVerticalAlignment(getSwing(attributes.get("v-align")));
+            root.setVerticalAlignment(parseSwing(attributes.get("v-align")));
+
+        observe("#text", root::setText, String.class);
     }
 
     @Override

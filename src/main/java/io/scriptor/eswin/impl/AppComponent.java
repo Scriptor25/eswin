@@ -21,8 +21,8 @@ public class AppComponent extends ComponentBase {
     }
 
     public void swap() {
-        final var loremIpsum = get("lorem-ipsum", EmbedComponent.class);
-        final var xmlDocs    = get("xml-docs", EmbedComponent.class);
+        final var loremIpsum = getChild("lorem-ipsum", EmbedComponent.class);
+        final var xmlDocs    = getChild("xml-docs", EmbedComponent.class);
 
         if (loremIpsum.isVisible()) {
             loremIpsum.setVisible(false);

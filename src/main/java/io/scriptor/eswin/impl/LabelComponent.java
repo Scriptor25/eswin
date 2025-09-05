@@ -8,15 +8,12 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-import static io.scriptor.eswin.component.Constants.getSwing;
-import static io.scriptor.eswin.util.EslUtil.getSegments;
-import static io.scriptor.eswin.util.EslUtil.observeSegments;
+import static io.scriptor.eswin.component.Constants.parseSwing;
 
 @Component("label")
 public class LabelComponent extends ComponentBase {
 
-    private final JLabel label;
-    private final String[] segments;
+    private final JLabel root;
 
     public LabelComponent(
             final @Nullable ComponentBase parent,
@@ -25,24 +22,18 @@ public class LabelComponent extends ComponentBase {
     ) {
         super(parent, attributes, text);
 
-        final var expressions = getSegments(text);
-
-        apply(label = new JLabel());
-        segments = new String[expressions.length];
-
-        observeSegments(parent, expressions, (index, value) -> {
-            segments[index] = value.toString();
-            label.setText(String.join("", segments));
-        });
+        apply(root = new JLabel());
 
         if (attributes.has("h-align"))
-            label.setHorizontalAlignment(getSwing(attributes.get("h-align")));
+            root.setHorizontalAlignment(parseSwing(attributes.get("h-align")));
         if (attributes.has("v-align"))
-            label.setVerticalAlignment(getSwing(attributes.get("v-align")));
+            root.setVerticalAlignment(parseSwing(attributes.get("v-align")));
+
+        observe("#text", root::setText, String.class);
     }
 
     @Override
     public @NotNull JComponent getJRoot() {
-        return label;
+        return root;
     }
 }

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 
-import static io.scriptor.eswin.component.Constants.getSwing;
+import static io.scriptor.eswin.component.Constants.parseSwing;
 
 @Component("text-field")
 public class TextFieldComponent extends ActionComponentBase {
@@ -24,13 +24,18 @@ public class TextFieldComponent extends ActionComponentBase {
     ) {
         super(parent, attributes, text);
 
-        apply(root = new JTextField(text));
+        apply(root = new JTextField());
 
         if (attributes.has("columns"))
             root.setColumns(Integer.parseUnsignedInt(attributes.get("columns"), 10));
 
         if (attributes.has("h-align"))
-            root.setHorizontalAlignment(getSwing(attributes.get("h-align")));
+            root.setHorizontalAlignment(parseSwing(attributes.get("h-align")));
+
+        if (attributes.has("default"))
+            root.setText(attributes.get("default"));
+
+        observe("#text", root::setText, String.class);
     }
 
     @Override
@@ -41,5 +46,9 @@ public class TextFieldComponent extends ActionComponentBase {
     @Override
     public @NotNull JComponent getJRoot() {
         return root;
+    }
+
+    public @NotNull String getText() {
+        return root.getText();
     }
 }

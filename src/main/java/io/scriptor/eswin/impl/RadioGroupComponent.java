@@ -18,7 +18,6 @@ import java.util.stream.Stream;
 public class RadioGroupComponent extends ActionComponentBase {
 
     private final List<ActionListener> listeners = new ArrayList<>();
-    private String selected;
 
     public RadioGroupComponent(
             final @Nullable ComponentBase parent,
@@ -26,6 +25,9 @@ public class RadioGroupComponent extends ActionComponentBase {
             final @NotNull String text
     ) {
         super(parent, attributes, text);
+
+        if (attributes.has("default"))
+            setSelected(attributes.get("default"));
     }
 
     @Override
@@ -33,17 +35,10 @@ public class RadioGroupComponent extends ActionComponentBase {
         listeners.add(listener);
     }
 
-    public @NotNull String getSelected() {
-        if (selected == null)
-            throw new IllegalStateException();
-        return selected;
-    }
-
     public void setSelected(final @NotNull String id) {
-        selected = id;
-        System.out.println(id);
+        notify("selected", id);
 
-        getChildren().forEach(child -> {
+        getRadioButtons().forEach(child -> {
             if (!child.getId().equals(id)) {
                 child.getJRoot().setSelected(false);
                 return;
@@ -56,28 +51,26 @@ public class RadioGroupComponent extends ActionComponentBase {
         });
     }
 
-    @Override
-    public @NotNull Stream<RadioButtonComponent> getChildren() {
-        return super.getChildren()
-                    .filter(child -> child instanceof RadioButtonComponent)
-                    .map(RadioButtonComponent.class::cast);
+    public @NotNull Stream<RadioButtonComponent> getRadioButtons() {
+        return getChildren()
+                .filter(child -> child instanceof RadioButtonComponent)
+                .map(RadioButtonComponent.class::cast);
     }
 
     @Override
-    public void chainInto(final @NotNull Container container, final boolean constraint) {
-        getChildren().forEach(child -> child.chainInto(container, constraint));
+    public void render(final @NotNull Container container, final boolean constraint) {
+        getChildren().forEach(child -> child.render(container, constraint));
     }
 
     @Override
-    public void add(final @NotNull String id, final @NotNull ComponentBase child) {
-        if (!(child instanceof RadioButtonComponent radio))
-            return;
+    public void addChild(final @NotNull String id, final @NotNull ComponentBase child) {
+        super.addChild(id, child);
 
-        super.add(id, child);
+        if (child instanceof RadioButtonComponent radio) {
+            if (!has("selected"))
+                setSelected(id);
 
-        if (selected == null)
-            setSelected(id);
-
-        radio.addListener(_ -> setSelected(id));
+            radio.addListener(_ -> setSelected(id));
+        }
     }
 }
