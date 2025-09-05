@@ -1,4 +1,4 @@
-package io.scriptor.eswin.impl;
+package io.scriptor.eswin.impl.builtin;
 
 import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
@@ -6,10 +6,12 @@ import io.scriptor.eswin.component.ComponentBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@Component(value = "action-panel", layout = "layout/action.panel.xml")
-public class ActionPanelComponent extends ComponentBase {
+import java.awt.*;
 
-    public ActionPanelComponent(
+@Component("fragment")
+public class FragmentComponent extends ComponentBase {
+
+    public FragmentComponent(
             final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
@@ -17,18 +19,8 @@ public class ActionPanelComponent extends ComponentBase {
         super(parent, attributes, text);
     }
 
-    public void submit() {
-    }
-
-    public void cancel() {
-    }
-
-    public void help() {
-    }
-
-    public void advanced() {
-    }
-
-    public void options() {
+    @Override
+    public void render(final @NotNull Container container, final boolean constraint) {
+        getChildren().forEach(child -> child.render(container, constraint));
     }
 }

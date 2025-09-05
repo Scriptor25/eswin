@@ -1,4 +1,4 @@
-package io.scriptor.eswin.impl;
+package io.scriptor.eswin.impl.builtin;
 
 import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;

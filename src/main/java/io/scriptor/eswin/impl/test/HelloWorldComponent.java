@@ -1,8 +1,9 @@
-package io.scriptor.eswin.impl;
+package io.scriptor.eswin.impl.test;
 
 import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
+import io.scriptor.eswin.impl.builtin.ButtonComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,7 +13,7 @@ import java.util.TimerTask;
 
 @Component(
         value = "hello-world",
-        layout = "layout/hello.world.xml"
+        layout = "layout/test/hello.world.xml"
 )
 public class HelloWorldComponent extends ComponentBase {
 

@@ -1,4 +1,4 @@
-package io.scriptor.eswin.impl;
+package io.scriptor.eswin.impl.builtin;
 
 import io.scriptor.eswin.component.ActionComponentBase;
 import io.scriptor.eswin.component.AttributeSet;
@@ -8,23 +8,29 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionListener;
 
-@Component("button")
-public class ButtonComponent extends ActionComponentBase {
+import static io.scriptor.eswin.component.Constants.parseSwing;
 
-    private final JButton root;
+@Component("radio-button")
+public class RadioButtonComponent extends ActionComponentBase {
 
-    public ButtonComponent(
+    private final JRadioButton root;
+
+    public RadioButtonComponent(
             final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
         super(parent, attributes, text);
 
-        apply(root = new JButton());
-        root.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        apply(root = new JRadioButton());
+
+        if (attributes.has("h-align"))
+            root.setHorizontalAlignment(parseSwing(attributes.get("h-align")));
+
+        if (attributes.has("v-align"))
+            root.setVerticalAlignment(parseSwing(attributes.get("v-align")));
 
         observe("#text", root::setText, String.class);
     }
@@ -35,15 +41,11 @@ public class ButtonComponent extends ActionComponentBase {
     }
 
     @Override
-    public @NotNull JComponent getJRoot() {
+    public @NotNull JRadioButton getJRoot() {
         return root;
     }
 
-    public boolean isEnabled() {
-        return root.isEnabled();
-    }
-
-    public void setEnabled(final boolean enabled) {
-        root.setEnabled(enabled);
+    public void setSelected(final boolean selected) {
+        root.setSelected(selected);
     }
 }

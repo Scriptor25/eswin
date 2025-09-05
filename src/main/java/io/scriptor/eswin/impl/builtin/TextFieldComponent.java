@@ -1,4 +1,4 @@
-package io.scriptor.eswin.impl;
+package io.scriptor.eswin.impl.builtin;
 
 import io.scriptor.eswin.component.ActionComponentBase;
 import io.scriptor.eswin.component.AttributeSet;
@@ -12,25 +12,28 @@ import java.awt.event.ActionListener;
 
 import static io.scriptor.eswin.component.Constants.parseSwing;
 
-@Component("radio-button")
-public class RadioButtonComponent extends ActionComponentBase {
+@Component("text-field")
+public class TextFieldComponent extends ActionComponentBase {
 
-    private final JRadioButton root;
+    private final JTextField root;
 
-    public RadioButtonComponent(
+    public TextFieldComponent(
             final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
         super(parent, attributes, text);
 
-        apply(root = new JRadioButton());
+        apply(root = new JTextField());
+
+        if (attributes.has("columns"))
+            root.setColumns(Integer.parseUnsignedInt(attributes.get("columns"), 10));
 
         if (attributes.has("h-align"))
             root.setHorizontalAlignment(parseSwing(attributes.get("h-align")));
 
-        if (attributes.has("v-align"))
-            root.setVerticalAlignment(parseSwing(attributes.get("v-align")));
+        if (attributes.has("default"))
+            root.setText(attributes.get("default"));
 
         observe("#text", root::setText, String.class);
     }
@@ -41,11 +44,11 @@ public class RadioButtonComponent extends ActionComponentBase {
     }
 
     @Override
-    public @NotNull JRadioButton getJRoot() {
+    public @NotNull JComponent getJRoot() {
         return root;
     }
 
-    public void setSelected(final boolean selected) {
-        root.setSelected(selected);
+    public @NotNull String getText() {
+        return root.getText();
     }
 }

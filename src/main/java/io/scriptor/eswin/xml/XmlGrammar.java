@@ -48,7 +48,8 @@ public class XmlGrammar extends Grammar<XmlDocument> {
     protected XmlDocument parseRoot(final @NotNull Context context) throws Unroll {
         return wrap(ctx -> {
             final var instructions = parseZeroOrMoreOf(ctx, this::instruction);
-            final var root         = element(ctx);
+            parseZeroOrMoreOf(ctx, this::comment);
+            final var root = element(ctx);
 
             return new XmlDocument(instructions.toArray(XmlInstruction[]::new), root);
         }).parse(context);
@@ -89,7 +90,7 @@ public class XmlGrammar extends Grammar<XmlDocument> {
 
             final Collection<XmlBase> children = parseZeroOrMoreOf(
                     ctx,
-                    context1 -> parseUnionOf(context1, this::element, this::cdata, this::text));
+                    context1 -> parseUnionOf(context1, this::comment, this::cdata, this::element, this::text));
 
             ctx.whitespace();
             ctx.expect("</");
@@ -103,6 +104,21 @@ public class XmlGrammar extends Grammar<XmlDocument> {
                 throw new Unroll(ctx, mark);
 
             return new XmlElement(begin, attributes.toArray(XmlAttribute[]::new), children.toArray(XmlBase[]::new));
+        }).parse(context);
+    }
+
+    protected XmlComment comment(final @NotNull Context context) throws Unroll {
+        context.whitespace();
+        return wrap(ctx -> {
+            ctx.expect("<!--");
+
+            final var elements   = parseZeroOrMoreOf(ctx, ctx1 -> ctx1.expectNot("-->"));
+            final var codepoints = elements.stream().mapToInt(Integer::intValue).toArray();
+            final var value      = new String(codepoints, 0, codepoints.length);
+
+            ctx.expect("-->");
+
+            return new XmlComment(value);
         }).parse(context);
     }
 

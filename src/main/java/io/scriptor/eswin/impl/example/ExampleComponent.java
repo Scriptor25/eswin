@@ -1,4 +1,4 @@
-package io.scriptor.eswin.impl;
+package io.scriptor.eswin.impl.example;
 
 import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
@@ -6,7 +6,7 @@ import io.scriptor.eswin.component.ComponentBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@Component(value = "example", layout = "layout/example.xml")
+@Component(value = "example", layout = "layout/example/example.xml")
 public class ExampleComponent extends ComponentBase {
 
     public ExampleComponent(

@@ -1,4 +1,4 @@
-package io.scriptor.eswin.impl;
+package io.scriptor.eswin.impl.builtin;
 
 import io.scriptor.eswin.component.ActionComponentBase;
 import io.scriptor.eswin.component.AttributeSet;
@@ -8,32 +8,23 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionListener;
 
-import static io.scriptor.eswin.component.Constants.parseSwing;
+@Component("button")
+public class ButtonComponent extends ActionComponentBase {
 
-@Component("text-field")
-public class TextFieldComponent extends ActionComponentBase {
+    private final JButton root;
 
-    private final JTextField root;
-
-    public TextFieldComponent(
+    public ButtonComponent(
             final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
         super(parent, attributes, text);
 
-        apply(root = new JTextField());
-
-        if (attributes.has("columns"))
-            root.setColumns(Integer.parseUnsignedInt(attributes.get("columns"), 10));
-
-        if (attributes.has("h-align"))
-            root.setHorizontalAlignment(parseSwing(attributes.get("h-align")));
-
-        if (attributes.has("default"))
-            root.setText(attributes.get("default"));
+        apply(root = new JButton());
+        root.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         observe("#text", root::setText, String.class);
     }
@@ -48,7 +39,11 @@ public class TextFieldComponent extends ActionComponentBase {
         return root;
     }
 
-    public @NotNull String getText() {
-        return root.getText();
+    public boolean isEnabled() {
+        return root.isEnabled();
+    }
+
+    public void setEnabled(final boolean enabled) {
+        root.setEnabled(enabled);
     }
 }

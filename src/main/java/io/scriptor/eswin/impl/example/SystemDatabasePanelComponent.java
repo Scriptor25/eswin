@@ -1,15 +1,16 @@
-package io.scriptor.eswin.impl;
+package io.scriptor.eswin.impl.example;
 
 import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
+import io.scriptor.eswin.impl.builtin.RadioGroupComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@Component(value = "database-panel", layout = "layout/database.panel.xml")
-public class DatabasePanelComponent extends ComponentBase {
+@Component(value = "system-database-panel", layout = "layout/example/system.database.panel.xml")
+public class SystemDatabasePanelComponent extends ComponentBase {
 
-    public DatabasePanelComponent(
+    public SystemDatabasePanelComponent(
             final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
@@ -18,14 +19,7 @@ public class DatabasePanelComponent extends ComponentBase {
     }
 
     public void select() {
-    }
-
-    public void create() {
-    }
-
-    public void repair() {
-    }
-
-    public void compact() {
+        final var component = getChild("selection", RadioGroupComponent.class);
+        final var selected  = component.get("selected", "", String.class);
     }
 }

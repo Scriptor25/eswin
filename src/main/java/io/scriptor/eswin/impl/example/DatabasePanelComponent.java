@@ -1,4 +1,4 @@
-package io.scriptor.eswin.impl;
+package io.scriptor.eswin.impl.example;
 
 import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
@@ -6,12 +6,10 @@ import io.scriptor.eswin.component.ComponentBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.*;
+@Component(value = "database-panel", layout = "layout/example/database.panel.xml")
+public class DatabasePanelComponent extends ComponentBase {
 
-@Component("fragment")
-public class FragmentComponent extends ComponentBase {
-
-    public FragmentComponent(
+    public DatabasePanelComponent(
             final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
@@ -19,8 +17,15 @@ public class FragmentComponent extends ComponentBase {
         super(parent, attributes, text);
     }
 
-    @Override
-    public void render(final @NotNull Container container, final boolean constraint) {
-        getChildren().forEach(child -> child.render(container, constraint));
+    public void select() {
+    }
+
+    public void create() {
+    }
+
+    public void repair() {
+    }
+
+    public void compact() {
     }
 }
