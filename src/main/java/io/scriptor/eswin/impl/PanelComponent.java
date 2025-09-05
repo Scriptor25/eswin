@@ -8,47 +8,37 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.util.stream.Stream;
 
 @Component("panel")
 public class PanelComponent extends ComponentBase {
 
     private final JPanel panel;
-    private final GridBagLayout layout;
 
     public PanelComponent(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
-        super(container, attributes, text);
+        super(parent, attributes, text);
 
         apply(panel = new JPanel());
 
-        panel.setLayout(layout = new GridBagLayout());
+        panel.setLayout(new GridBagLayout());
 
         if (Constants.DEBUG)
             panel.setBackground(new Color((float) Math.random(), (float) Math.random(), (float) Math.random()));
     }
 
     @Override
-    public @NotNull Stream<JComponent> getJRoot() {
-        return Stream.of(panel);
+    public @NotNull JComponent getJRoot() {
+        return panel;
     }
 
     @Override
-    public void putChild(final @NotNull String id, final @NotNull ComponentBase child) {
-        super.putChild(id, child);
+    public void add(final @NotNull String id, final @NotNull ComponentBase child) {
+        super.add(id, child);
 
-        final var constraints = child.getConstraints(new GridBagConstraints());
-
-        child.getJRoot().forEach(component -> {
-            panel.add(component);
-            layout.setConstraints(component, constraints);
-        });
+        child.chainInto(panel, true);
     }
 }

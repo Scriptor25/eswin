@@ -6,22 +6,21 @@ import io.scriptor.eswin.component.ComponentBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.util.stream.Stream;
+import java.awt.*;
 
 @Component("fragment")
 public class FragmentComponent extends ComponentBase {
 
     public FragmentComponent(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
-        super(container, attributes, text);
+        super(parent, attributes, text);
     }
 
     @Override
-    public @NotNull Stream<JComponent> getJRoot() {
-        return getChildren().map(ComponentBase::getJRoot).reduce(Stream.of(), Stream::concat);
+    public void chainInto(final @NotNull Container container, final boolean constraint) {
+        getChildren().forEach(child -> child.chainInto(container, constraint));
     }
 }

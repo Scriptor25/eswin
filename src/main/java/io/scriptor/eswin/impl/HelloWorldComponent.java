@@ -22,11 +22,11 @@ public class HelloWorldComponent extends ComponentBase {
     private String status = "";
 
     public HelloWorldComponent(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
-        super(container, attributes, text);
+        super(parent, attributes, text);
 
         this.message = attributes.get("message");
 
@@ -58,7 +58,7 @@ public class HelloWorldComponent extends ComponentBase {
     }
 
     public void example(final @NotNull ActionEvent event) {
-        final var button = getChild("press-me", ButtonComponent.class);
+        final var button = get("press-me", ButtonComponent.class);
 
         if (!button.isEnabled())
             return;

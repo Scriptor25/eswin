@@ -2,6 +2,7 @@ package io.scriptor.eswin.registry;
 
 import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.ComponentBase;
+import io.scriptor.eswin.component.MutableAttributeSet;
 import io.scriptor.eswin.xml.XmlAttribute;
 import io.scriptor.eswin.xml.XmlElement;
 import org.jetbrains.annotations.NotNull;
@@ -34,37 +35,37 @@ public class Registry {
     }
 
     public @NotNull ComponentBase instantiate(final @NotNull String name) {
-        return instantiate(null, name, new AttributeSet(), "");
+        return instantiate(null, name, new MutableAttributeSet(), "");
     }
 
     public @NotNull ComponentBase instantiate(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull XmlElement element
     ) {
-        final var instance = instantiate(container, element.name(), element.attributes(), element.text());
+        final var instance = instantiate(parent, element.name(), element.attributes(), element.text());
 
         element.elements()
-               .map(e -> instantiate(container, e))
-               .forEach(instance::putChild);
+               .map(e -> instantiate(parent, e))
+               .forEach(instance::add);
 
         return instance;
     }
 
     public @NotNull ComponentBase instantiate(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull String name,
             final @NotNull XmlAttribute[] attributes,
             final @NotNull String text
     ) {
-        final var set = new AttributeSet();
+        final var set = new MutableAttributeSet();
         for (final var attribute : attributes)
             set.put(attribute.name(), attribute.value());
 
-        return instantiate(container, name, set, text);
+        return instantiate(parent, name, set, text);
     }
 
     public @NotNull ComponentBase instantiate(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull String name,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
@@ -77,7 +78,7 @@ public class Registry {
         try {
             final var constructor = type.getConstructor(ComponentBase.class, AttributeSet.class, String.class);
 
-            instance = constructor.newInstance(container, attributes, text);
+            instance = constructor.newInstance(parent, attributes, text);
         } catch (final IllegalAccessException |
                        InstantiationException |
                        IllegalArgumentException |

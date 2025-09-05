@@ -7,11 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.stream.Stream;
 
 import static io.scriptor.eswin.component.Constants.getSwing;
-import static io.scriptor.eswin.util.DynamicUtil.getSegments;
-import static io.scriptor.eswin.util.DynamicUtil.observeSegments;
+import static io.scriptor.eswin.util.EslUtil.getSegments;
+import static io.scriptor.eswin.util.EslUtil.observeSegments;
 
 @Component("label")
 public class LabelComponent extends ComponentBase {
@@ -20,18 +19,18 @@ public class LabelComponent extends ComponentBase {
     private final String[] segments;
 
     public LabelComponent(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
-        super(container, attributes, text);
+        super(parent, attributes, text);
 
         final var expressions = getSegments(text);
 
         apply(label = new JLabel());
         segments = new String[expressions.length];
 
-        observeSegments(container, expressions, (index, value) -> {
+        observeSegments(parent, expressions, (index, value) -> {
             segments[index] = value.toString();
             label.setText(String.join("", segments));
         });
@@ -43,7 +42,7 @@ public class LabelComponent extends ComponentBase {
     }
 
     @Override
-    public @NotNull Stream<JComponent> getJRoot() {
-        return Stream.of(label);
+    public @NotNull JComponent getJRoot() {
+        return label;
     }
 }

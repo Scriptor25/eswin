@@ -2,7 +2,7 @@ package io.scriptor.eswin.esl.runtime;
 
 import org.jetbrains.annotations.NotNull;
 
-public class ConstantVoid implements Constant {
+public class VoidValue implements Value {
 
     @Override
     public @NotNull Object value() {

@@ -4,17 +4,19 @@ import org.jetbrains.annotations.NotNull;
 
 public interface Value {
 
-    @NotNull Object value();
+    default @NotNull Object value() {
+        throw new UnsupportedOperationException();
+    }
 
     default @NotNull Value store(final @NotNull Object value) {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 
     default @NotNull Value field(final @NotNull String name) {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 
     default @NotNull Value call(final @NotNull Value[] arguments) {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 }

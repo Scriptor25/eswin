@@ -13,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 @Component("embed")
 public class EmbedComponent extends ComponentBase {
@@ -21,11 +20,11 @@ public class EmbedComponent extends ComponentBase {
     private final JFXPanel panel;
 
     public EmbedComponent(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
-        super(container, attributes, text);
+        super(parent, attributes, text);
 
         apply(panel = new JFXPanel());
 
@@ -52,7 +51,7 @@ public class EmbedComponent extends ComponentBase {
     }
 
     @Override
-    public @NotNull Stream<JComponent> getJRoot() {
-        return Stream.of(panel);
+    public @NotNull JComponent getJRoot() {
+        return panel;
     }
 }

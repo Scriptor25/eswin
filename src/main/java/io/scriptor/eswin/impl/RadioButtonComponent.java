@@ -1,5 +1,6 @@
 package io.scriptor.eswin.impl;
 
+import io.scriptor.eswin.component.ActionComponentBase;
 import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
@@ -7,36 +8,38 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.stream.Stream;
+import java.awt.event.ActionListener;
 
 import static io.scriptor.eswin.component.Constants.getSwing;
-import static io.scriptor.eswin.util.DynamicUtil.getActionListener;
 
 @Component("radio-button")
-public class RadioButtonComponent extends ComponentBase {
+public class RadioButtonComponent extends ActionComponentBase {
 
-    private final JRadioButton radio;
+    private final JRadioButton root;
 
     public RadioButtonComponent(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
-        super(container, attributes, text);
+        super(parent, attributes, text);
 
-        apply(radio = new JRadioButton(text));
+        apply(root = new JRadioButton(text));
 
         if (attributes.has("h-align"))
-            radio.setHorizontalAlignment(getSwing(attributes.get("h-align")));
-        if (attributes.has("v-align"))
-            radio.setVerticalAlignment(getSwing(attributes.get("v-align")));
+            root.setHorizontalAlignment(getSwing(attributes.get("h-align")));
 
-        if (attributes.has("action"))
-            radio.addActionListener(getActionListener(container, attributes.get("action")));
+        if (attributes.has("v-align"))
+            root.setVerticalAlignment(getSwing(attributes.get("v-align")));
     }
 
     @Override
-    public @NotNull Stream<JComponent> getJRoot() {
-        return Stream.of(radio);
+    public void addListener(final @NotNull ActionListener listener) {
+        root.addActionListener(listener);
+    }
+
+    @Override
+    public @NotNull JRadioButton getJRoot() {
+        return root;
     }
 }

@@ -1,5 +1,6 @@
 package io.scriptor.eswin.impl;
 
+import io.scriptor.eswin.component.ActionComponentBase;
 import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
@@ -8,49 +9,52 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.stream.Stream;
+import java.awt.event.ActionListener;
 
-import static io.scriptor.eswin.util.DynamicUtil.*;
+import static io.scriptor.eswin.util.EslUtil.getSegments;
+import static io.scriptor.eswin.util.EslUtil.observeSegments;
 
 @Component("button")
-public class ButtonComponent extends ComponentBase {
+public class ButtonComponent extends ActionComponentBase {
 
-    private final JButton button;
+    private final JButton root;
     private final String[] segments;
 
     public ButtonComponent(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
-        super(container, attributes, text);
+        super(parent, attributes, text);
 
         final var expressions = getSegments(text);
         segments = new String[expressions.length];
 
-        apply(button = new JButton());
+        apply(root = new JButton());
 
-        observeSegments(container, expressions, (index, value) -> {
+        observeSegments(parent, expressions, (index, value) -> {
             segments[index] = value.toString();
-            button.setText(String.join("", segments));
+            root.setText(String.join("", segments));
         });
 
-        if (attributes.has("action"))
-            button.addActionListener(getActionListener(container, attributes.get("action")));
-
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        root.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     @Override
-    public @NotNull Stream<JComponent> getJRoot() {
-        return Stream.of(button);
+    public void addListener(final @NotNull ActionListener listener) {
+        root.addActionListener(listener);
+    }
+
+    @Override
+    public @NotNull JComponent getJRoot() {
+        return root;
     }
 
     public boolean isEnabled() {
-        return button.isEnabled();
+        return root.isEnabled();
     }
 
     public void setEnabled(final boolean enabled) {
-        button.setEnabled(enabled);
+        root.setEnabled(enabled);
     }
 }

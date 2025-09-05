@@ -40,7 +40,7 @@ public record MemberValue(@NotNull EslGetter getter, @NotNull EslSetter setter, 
         try {
             final var result = caller.call(Arrays.stream(arguments).map(Value::value).toArray());
             if (result == null)
-                return new ConstantVoid();
+                return new VoidValue();
             return new ObjectValue(result);
         } catch (final Exception e) {
             throw new RuntimeException(e);

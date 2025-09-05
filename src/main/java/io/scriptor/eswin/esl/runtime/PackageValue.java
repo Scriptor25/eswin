@@ -4,16 +4,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
 
-public record ConstantPackage(@NotNull String name) implements Constant {
-
-    @Override
-    public @NotNull Object value() {
-        throw new IllegalStateException();
-    }
+public record PackageValue(@NotNull String name) implements Value {
 
     @Override
     public @NotNull Value field(final @NotNull String name) {
-        return new ConstantPackage(this.name + '.' + name);
+        return new PackageValue(this.name + '.' + name);
     }
 
     @Override
@@ -36,7 +31,7 @@ public record ConstantPackage(@NotNull String name) implements Constant {
 
             final var result = mtd.invoke(null, values);
             if (result == null)
-                return new ConstantVoid();
+                return new VoidValue();
             return new ObjectValue(result);
         } catch (final ClassNotFoundException |
                        InvocationTargetException |

@@ -13,16 +13,16 @@ import org.jetbrains.annotations.Nullable;
 public class AppComponent extends ComponentBase {
 
     public AppComponent(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
-        super(container, attributes, text);
+        super(parent, attributes, text);
     }
 
     public void swap() {
-        final var loremIpsum = getChild("lorem-ipsum", EmbedComponent.class);
-        final var xmlDocs    = getChild("xml-docs", EmbedComponent.class);
+        final var loremIpsum = get("lorem-ipsum", EmbedComponent.class);
+        final var xmlDocs    = get("xml-docs", EmbedComponent.class);
 
         if (loremIpsum.isVisible()) {
             loremIpsum.setVisible(false);

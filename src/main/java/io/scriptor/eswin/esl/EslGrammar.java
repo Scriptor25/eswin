@@ -1,5 +1,6 @@
 package io.scriptor.eswin.esl;
 
+import io.scriptor.eswin.esl.runtime.*;
 import io.scriptor.eswin.esl.tree.*;
 import io.scriptor.eswin.grammar.Context;
 import io.scriptor.eswin.grammar.Grammar;
@@ -110,11 +111,11 @@ public class EslGrammar extends Grammar<EslExpression> {
         }).parse(context);
     }
 
-    protected @NotNull EslConstant constant(final @NotNull Context context) throws Unroll {
+    protected @NotNull Constant constant(final @NotNull Context context) throws Unroll {
         return parseUnionOf(context, this::constantString, this::constantChar, this::constantInt, this::constantFloat);
     }
 
-    protected @NotNull EslConstantString constantString(final @NotNull Context context) throws Unroll {
+    protected @NotNull ConstantString constantString(final @NotNull Context context) throws Unroll {
         context.whitespace();
         return wrap(ctx -> {
             ctx.expect('"');
@@ -124,22 +125,22 @@ public class EslGrammar extends Grammar<EslExpression> {
             final var codepoints = data.stream().mapToInt(Integer::intValue).toArray();
             final var value      = new String(codepoints, 0, codepoints.length);
 
-            return new EslConstantString(value);
+            return new ConstantString(value);
         }).parse(context);
     }
 
-    protected @NotNull EslConstantChar constantChar(final @NotNull Context context) throws Unroll {
+    protected @NotNull ConstantChar constantChar(final @NotNull Context context) throws Unroll {
         context.whitespace();
         return wrap(ctx -> {
             ctx.expect('\'');
             final var value = ctx.expect('\'');
             ctx.expect('\'');
 
-            return new EslConstantChar(value);
+            return new ConstantChar(value);
         }).parse(context);
     }
 
-    protected @NotNull EslConstantInt constantInt(final @NotNull Context context) throws Unroll {
+    protected @NotNull ConstantInt constantInt(final @NotNull Context context) throws Unroll {
         context.whitespace();
         return wrap(ctx -> {
 
@@ -160,11 +161,11 @@ public class EslGrammar extends Grammar<EslExpression> {
 
             final var value = Long.parseLong(string);
 
-            return new EslConstantInt(value);
+            return new ConstantInt(value);
         }).parse(context);
     }
 
-    protected @NotNull EslConstantFloat constantFloat(final @NotNull Context context) throws Unroll {
+    protected @NotNull ConstantFloat constantFloat(final @NotNull Context context) throws Unroll {
         context.whitespace();
         return parseUnionOf(
                 context,
@@ -173,16 +174,16 @@ public class EslGrammar extends Grammar<EslExpression> {
                     ctx.expect('.');
                     final var snd = parseZeroOrOneOf(ctx, this::constantInt);
 
-                    final var string = "%d.%d".formatted(fst.value(), snd.map(EslConstantInt::value).orElse(0L));
-                    return new EslConstantFloat(Double.parseDouble(string));
+                    final var string = "%d.%d".formatted(fst.value(), snd.map(ConstantInt::value).orElse(0L));
+                    return new ConstantFloat(Double.parseDouble(string));
                 }),
                 wrap(ctx -> {
                     final var fst = parseZeroOrOneOf(ctx, this::constantInt);
                     ctx.expect('.');
                     final var snd = constantInt(ctx);
 
-                    final var string = "%d.%d".formatted(fst.map(EslConstantInt::value).orElse(0L), snd.value());
-                    return new EslConstantFloat(Double.parseDouble(string));
+                    final var string = "%d.%d".formatted(fst.map(ConstantInt::value).orElse(0L), snd.value());
+                    return new ConstantFloat(Double.parseDouble(string));
                 }));
     }
 

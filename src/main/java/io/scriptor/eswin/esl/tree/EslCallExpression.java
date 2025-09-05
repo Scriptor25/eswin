@@ -19,9 +19,4 @@ public record EslCallExpression(@NotNull EslExpression callee, @NotNull EslExpre
 
         return callee.call(arguments);
     }
-
-    @Override
-    public void observe(final @NotNull EslFrame frame, final @NotNull Consumer<Object> observer) {
-        throw new IllegalStateException();
-    }
 }

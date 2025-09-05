@@ -10,10 +10,10 @@ import org.jetbrains.annotations.Nullable;
 public class DatabasePanelComponent extends ComponentBase {
 
     public DatabasePanelComponent(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
-        super(container, attributes, text);
+        super(parent, attributes, text);
     }
 }

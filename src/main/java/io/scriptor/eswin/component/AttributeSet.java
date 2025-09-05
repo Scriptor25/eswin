@@ -2,38 +2,15 @@ package io.scriptor.eswin.component;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
+public interface AttributeSet {
 
-public class AttributeSet {
+    boolean has(final @NotNull String name);
 
-    private final Map<String, String> attributes = new HashMap<>();
+    @NotNull String get(final @NotNull String name);
 
-    public AttributeSet() {
-    }
-
-    public void put(final @NotNull String key, final @NotNull String value) {
-        attributes.put(key, value);
-    }
-
-    public boolean has(final @NotNull String key) {
-        return attributes.containsKey(key);
-    }
-
-    public @NotNull String get(final @NotNull String key) {
-        if (!attributes.containsKey(key))
-            throw new IllegalStateException();
-        return attributes.get(key);
-    }
-
-    public @NotNull String get(final @NotNull String key, final @NotNull String defaultValue) {
-        if (!attributes.containsKey(key))
-            return defaultValue;
-        return attributes.get(key);
-    }
-
-    @Override
-    public String toString() {
-        return attributes.toString();
+    default @NotNull String get(final @NotNull String name, final @NotNull String defaultValue) {
+        if (has(name))
+            return get(name);
+        return defaultValue;
     }
 }

@@ -3,7 +3,7 @@ package io.scriptor.eswin.util;
 import io.scriptor.eswin.component.ComponentBase;
 import io.scriptor.eswin.esl.EslFrame;
 import io.scriptor.eswin.esl.EslGrammar;
-import io.scriptor.eswin.esl.tree.EslConstantString;
+import io.scriptor.eswin.esl.runtime.ConstantString;
 import io.scriptor.eswin.esl.tree.EslExpression;
 import io.scriptor.eswin.grammar.Context;
 import org.jetbrains.annotations.NotNull;
@@ -13,20 +13,20 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DynamicUtil {
+public class EslUtil {
 
-    private DynamicUtil() {
+    private EslUtil() {
     }
 
     public static @NotNull ActionListener getActionListener(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull String action
     ) {
         final var grammar    = new EslGrammar();
         final var expression = grammar.parse("<unknown>", action);
 
         return event -> {
-            final var frame = new EslFrame(container, event);
+            final var frame = new EslFrame(parent, event);
             expression.evaluate(frame);
         };
     }
@@ -41,7 +41,7 @@ public class DynamicUtil {
 
         while (context.get() >= 0) {
             if (context.skipif('{')) {
-                expressions.add(new EslConstantString(builder.toString()));
+                expressions.add(new ConstantString(builder.toString()));
                 builder.delete(0, builder.length());
 
                 final var expression = grammar.parse(context);
@@ -56,18 +56,18 @@ public class DynamicUtil {
         }
 
         if (!builder.isEmpty()) {
-            expressions.add(new EslConstantString(builder.toString()));
+            expressions.add(new ConstantString(builder.toString()));
         }
 
         return expressions.toArray(EslExpression[]::new);
     }
 
     public static void observeSegments(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull EslExpression[] expressions,
             final @NotNull SegmentObserver observer
     ) {
-        final var frame = new EslFrame(container, null);
+        final var frame = new EslFrame(parent, null);
         for (int i = 0; i < expressions.length; ++i) {
             final var index = i;
             expressions[i].observe(frame, value -> observer.notify(index, value.toString()));

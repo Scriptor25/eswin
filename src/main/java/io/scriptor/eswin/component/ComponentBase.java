@@ -18,8 +18,9 @@ import static io.scriptor.eswin.component.Constants.*;
 public abstract class ComponentBase {
 
     private final String id;
+    private final ComponentBase parent;
     private final AttributeSet attributes;
-    private final Map<String, ComponentBase> children = new HashMap<>();
+    private final Map<String, Indexed<ComponentBase>> children = new HashMap<>();
 
     private final Map<String, Object> state = new HashMap<>();
     private final Map<String, List<Consumer<Object>>> observers = new HashMap<>();
@@ -27,30 +28,51 @@ public abstract class ComponentBase {
     private ComponentBase root;
 
     public ComponentBase(
-            final @Nullable ComponentBase container,
+            final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
         this.id = attributes.has("id")
                   ? attributes.get("id")
                   : UUID.randomUUID().toString();
+        this.parent = parent;
         this.attributes = attributes;
+    }
+
+    public @NotNull String getId() {
+        return id;
+    }
+
+    public @Nullable ComponentBase getContainer() {
+        return parent;
+    }
+
+    public @NotNull AttributeSet getAttributes() {
+        return attributes;
     }
 
     public void setRoot(final @NotNull ComponentBase root) {
         this.root = root;
-        this.root.getJRoot().forEach(this::apply);
+
+        apply(this.root.getJRoot());
     }
 
     public @Nullable ComponentBase getRoot() {
         return root;
     }
 
-
-    public @NotNull Stream<JComponent> getJRoot() {
+    public @NotNull JComponent getJRoot() {
         if (root == null)
             throw new IllegalStateException();
         return root.getJRoot();
+    }
+
+    public void chainInto(final @NotNull Container container, final boolean constraint) {
+        if (constraint) {
+            container.add(getJRoot(), getConstraints());
+            return;
+        }
+        container.add(getJRoot());
     }
 
     protected void apply(final @NotNull JComponent component) {
@@ -76,7 +98,9 @@ public abstract class ComponentBase {
         component.setVisible(!attributes.has("hidden"));
     }
 
-    public @NotNull GridBagConstraints getConstraints(final @NotNull GridBagConstraints constraints) {
+    public @NotNull GridBagConstraints getConstraints() {
+        final var constraints = new GridBagConstraints();
+
         if (attributes.has("anchor"))
             constraints.anchor = getAnchor(attributes.get("anchor"));
         if (attributes.has("fill"))
@@ -104,37 +128,41 @@ public abstract class ComponentBase {
         return constraints;
     }
 
-    public @NotNull Stream<ComponentBase> getChildren() {
-        return children.values().stream();
+    public @NotNull Stream<? extends ComponentBase> getChildren() {
+        return children.values().stream().sorted().map(Indexed::value);
     }
 
-    public void putChild(final @NotNull String id, final @NotNull ComponentBase child) {
-        children.put(id, child);
-
-        if (Constants.DEBUG)
-            System.out.printf("[%s] put %s -> %s%n", this.id, id, child);
+    public @NotNull ComponentBase getFirst() {
+        return getChildren().findFirst().orElseThrow(IllegalStateException::new);
     }
 
-    public void putChild(final @NotNull ComponentBase child) {
-        putChild(child.id, child);
+    public void add(final @NotNull String id, final @NotNull ComponentBase child) {
+        if (children.containsKey(id))
+            throw new IllegalStateException();
+
+        children.put(id, new Indexed<>(children.size(), child));
     }
 
-    public boolean hasChild(final @NotNull String id) {
+    public void add(final @NotNull ComponentBase child) {
+        add(child.id, child);
+    }
+
+    public boolean has(final @NotNull String id) {
         if (children.containsKey(id))
             return true;
         for (final var child : children.values())
-            if (child.hasChild(id))
+            if (child.value().has(id))
                 return true;
         return false;
     }
 
-    public <C extends ComponentBase> C getChild(final @NotNull String id, final @NotNull Class<C> type) {
+    public <C extends ComponentBase> C get(final @NotNull String id, final @NotNull Class<C> type) {
         if (!children.containsKey(id)) {
             for (final var child : children.values())
-                if (child.hasChild(id))
-                    return child.getChild(id, type);
+                if (child.value().has(id))
+                    return child.value().get(id, type);
             if (root != null)
-                return root.getChild(id, type);
+                return root.get(id, type);
             throw new IllegalStateException();
         }
 
@@ -163,10 +191,10 @@ public abstract class ComponentBase {
     }
 
     public boolean isVisible() {
-        return getJRoot().anyMatch(JComponent::isVisible);
+        return getJRoot().isVisible();
     }
 
     public void setVisible(final boolean visible) {
-        getJRoot().forEach(component -> component.setVisible(visible));
+        getJRoot().setVisible(visible);
     }
 }
