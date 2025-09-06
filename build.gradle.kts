@@ -6,6 +6,8 @@ plugins {
     `java-library`
     `maven-publish`
     application
+    java
+    idea
     id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
@@ -13,7 +15,11 @@ group = "io.scriptor"
 version = "1.0.0"
 description = "eswin"
 
-java.toolchain.languageVersion.set(JavaLanguageVersion.of(24))
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(24))
+    }
+}
 
 repositories {
     mavenLocal()
@@ -35,4 +41,11 @@ javafx {
 
 application {
     mainClass.set("io.scriptor.eswin.Main")
+}
+
+idea {
+    module {
+        isDownloadJavadoc = true
+        isDownloadSources = true
+    }
 }
