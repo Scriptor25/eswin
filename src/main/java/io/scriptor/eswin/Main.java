@@ -3,6 +3,7 @@ package io.scriptor.eswin;
 import com.formdev.flatlaf.FlatDarculaLaf;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
+import io.scriptor.eswin.component.ContextProvider;
 import io.scriptor.eswin.registry.ComponentData;
 import io.scriptor.eswin.registry.Registry;
 import io.scriptor.eswin.util.ClassScanner;
@@ -39,15 +40,14 @@ public class Main {
             frame.setIconImage(image);
 
         } catch (final IOException e) {
-            Log.warn(e.toString());
-            return;
+            Log.warn("icon image: %s", e);
         }
 
         final ClassScanner scanner;
         try {
             scanner = new ClassScanner("io.scriptor.eswin");
         } catch (final URISyntaxException | IOException | ClassNotFoundException e) {
-            Log.warn(e.toString());
+            Log.warn("class scanner: %s", e);
             return;
         }
 
@@ -59,30 +59,33 @@ public class Main {
                .forEach(cls -> {
                    final var component = cls.getAnnotation(Component.class);
 
-                   final XmlDocument layout;
+                   XmlDocument layout;
                    if (component.layout().isEmpty()) {
                        layout = null;
                    } else {
                        try (final var stream = ClassLoader.getSystemResourceAsStream(component.layout())) {
                            if (stream == null)
-                               throw new FileNotFoundException();
+                               throw new FileNotFoundException(component.layout());
 
                            layout = grammar.parse(component.layout(), stream);
 
                        } catch (final IOException e) {
-                           Log.warn(e.toString());
-                           return;
+                           Log.warn("layout '%s': %s", component.layout(), e);
+
+                           layout = null;
                        }
                    }
 
                    registry.put(component.value(), new ComponentData(cls, layout));
                });
 
-        if (args.length == 1) {
-            final var app = registry.instantiate(args[0]);
-            app.render(frame, false);
-        }
+        final var provider = new ContextProvider();
+        registry.instantiate(provider, "app")
+                .ifPresent(app -> {
+                    app.attach(frame, false);
+                });
 
+        frame.setPreferredSize(new Dimension(800, 600));
         frame.pack();
         frame.setVisible(true);
     }

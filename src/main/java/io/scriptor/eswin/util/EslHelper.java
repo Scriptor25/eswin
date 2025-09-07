@@ -1,15 +1,16 @@
 package io.scriptor.eswin.util;
 
+import io.scriptor.eswin.component.ActionComponentBase;
+import io.scriptor.eswin.component.ActionListener;
 import io.scriptor.eswin.component.ComponentBase;
 import io.scriptor.eswin.esl.EslFrame;
 import io.scriptor.eswin.esl.EslGrammar;
 import io.scriptor.eswin.esl.runtime.EslConstantString;
 import io.scriptor.eswin.esl.tree.EslExpression;
-import io.scriptor.eswin.grammar.Context;
+import io.scriptor.eswin.grammar.GrammarContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class EslHelper {
     private EslHelper() {
     }
 
-    public static @NotNull ActionListener getActionListener(
+    public static <C extends ActionComponentBase<C, P>, P> @NotNull ActionListener<C, P> getActionListener(
             final @Nullable ComponentBase parent,
             final @NotNull String action
     ) {
@@ -36,14 +37,14 @@ public class EslHelper {
 
     public static @NotNull EslExpression[] getSegments(final @NotNull String text) {
         final var grammar = new EslGrammar();
-        final var context = new Context("<unknown>", text);
+        final var context = new GrammarContext("<unknown>", text);
 
         final var builder = new StringBuilder();
 
         final List<EslExpression> expressions = new ArrayList<>();
 
         while (context.get() >= 0) {
-            if (context.skipif('{')) {
+            if (context.skipIf('{')) {
                 expressions.add(new EslConstantString(builder.toString()));
                 builder.delete(0, builder.length());
 
@@ -51,7 +52,7 @@ public class EslHelper {
                 expressions.add(expression);
 
                 context.whitespace();
-                if (!context.skipif('}'))
+                if (!context.skipIf('}'))
                     throw new IllegalStateException();
             } else {
                 builder.appendCodePoint(context.skip());

@@ -18,11 +18,11 @@ public class Unroll extends Throwable {
 
     public final int index;
 
-    public Unroll(final @NotNull Context context, final int index) {
+    public Unroll(final @NotNull GrammarContext context, final int index) {
         this(context.filename(), context.buffer(), index);
     }
 
-    public Unroll(final @NotNull Context context, final int index, final @NotNull Throwable cause) {
+    public Unroll(final @NotNull GrammarContext context, final int index, final @NotNull Throwable cause) {
         this(context.filename(), context.buffer(), index, cause);
     }
 

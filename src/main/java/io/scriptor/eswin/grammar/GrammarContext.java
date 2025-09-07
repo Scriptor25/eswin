@@ -6,25 +6,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 
-public class Context {
+public class GrammarContext {
 
     private final String filename;
     private final int[] buffer;
     private final int end;
     private int index;
 
-    public Context(final @NotNull String filename, final int @NotNull [] buffer) {
+    public GrammarContext(final @NotNull String filename, final int @NotNull [] buffer) {
         this(filename, buffer, 0, buffer.length);
     }
 
-    public Context(final @NotNull String filename, final @NotNull String string) {
+    public GrammarContext(final @NotNull String filename, final @NotNull String string) {
         this.filename = filename;
         this.buffer = string.codePoints().toArray();
         this.end = this.buffer.length;
         this.index = 0;
     }
 
-    public Context(final @NotNull String filename, final @NotNull InputStream stream) throws IOException {
+    public GrammarContext(final @NotNull String filename, final @NotNull InputStream stream) throws IOException {
         final var wrapped = new PushbackInputStream(stream);
         final var charset = Encoding.detect(wrapped);
         final var bytes   = wrapped.readAllBytes();
@@ -35,28 +35,38 @@ public class Context {
         this.index = 0;
     }
 
-    public Context(final @NotNull String filename, final int @NotNull [] buffer, final int offset, final int length) {
+    public GrammarContext(
+            final @NotNull String filename,
+            final int @NotNull [] buffer,
+            final int offset,
+            final int length
+    ) {
         this.filename = filename;
         this.buffer = buffer;
         this.end = offset + length;
         this.index = offset;
     }
 
-    public Context(final @NotNull String filename, final @NotNull String string, final int offset) {
+    public GrammarContext(final @NotNull String filename, final @NotNull String string, final int offset) {
         this.filename = filename;
         this.buffer = string.codePoints().toArray();
         this.end = this.buffer.length;
         this.index = offset;
     }
 
-    public Context(final @NotNull String filename, final @NotNull String string, final int offset, final int length) {
+    public GrammarContext(
+            final @NotNull String filename,
+            final @NotNull String string,
+            final int offset,
+            final int length
+    ) {
         this.filename = filename;
         this.buffer = string.codePoints().toArray();
         this.end = offset + length;
         this.index = offset;
     }
 
-    public Context(
+    public GrammarContext(
             final @NotNull String filename,
             final @NotNull InputStream stream,
             final int offset,
@@ -100,7 +110,7 @@ public class Context {
         return buffer[index];
     }
 
-    public boolean skipif(final int codepoint) {
+    public boolean skipIf(final int codepoint) {
         if (get() != codepoint)
             return false;
         skip();
@@ -113,12 +123,11 @@ public class Context {
         return skip();
     }
 
-    public @NotNull String expect(final @NotNull String string) throws Unroll {
+    public void expect(final @NotNull String string) throws Unroll {
         final var mark = index;
         for (final var codepoint : string.codePoints().toArray())
             if (skip() != codepoint)
                 throw new Unroll(filename, buffer, mark);
-        return string;
     }
 
     public int expectNot(final int codepoint) throws Unroll {

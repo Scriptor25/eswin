@@ -11,15 +11,15 @@ import java.util.Optional;
 
 public abstract class Grammar<R> {
 
-    protected abstract R parseRoot(final @NotNull Context context) throws Unroll;
+    protected abstract R parseRoot(final @NotNull GrammarContext context) throws Unroll;
 
     public R parse(final @NotNull String filename, final int @NotNull [] buffer, final int offset, final int length) {
-        final var context = new Context(filename, buffer, offset, length);
+        final var context = new GrammarContext(filename, buffer, offset, length);
         return parse(context);
     }
 
     public R parse(final @NotNull String filename, final @NotNull String string, final int offset, final int length) {
-        final var context = new Context(filename, string, offset, length);
+        final var context = new GrammarContext(filename, string, offset, length);
         return parse(context);
     }
 
@@ -29,26 +29,26 @@ public abstract class Grammar<R> {
             final int offset,
             final int length
     ) throws IOException {
-        final var context = new Context(filename, stream, offset, length);
+        final var context = new GrammarContext(filename, stream, offset, length);
         return parse(context);
     }
 
     public R parse(final @NotNull String filename, final int @NotNull [] buffer) {
-        final var context = new Context(filename, buffer);
+        final var context = new GrammarContext(filename, buffer);
         return parse(context);
     }
 
     public R parse(final @NotNull String filename, final @NotNull String string) {
-        final var context = new Context(filename, string);
+        final var context = new GrammarContext(filename, string);
         return parse(context);
     }
 
     public R parse(final @NotNull String filename, final @NotNull InputStream stream) throws IOException {
-        final var context = new Context(filename, stream);
+        final var context = new GrammarContext(filename, stream);
         return parse(context);
     }
 
-    public R parse(final @NotNull Context context) {
+    public R parse(final @NotNull GrammarContext context) {
         try {
             return parseRoot(context);
         } catch (final Unroll e) {
@@ -68,7 +68,7 @@ public abstract class Grammar<R> {
     }
 
     public static <T> @NotNull Optional<T> parseZeroOrOneOf(
-            final @NotNull Context context,
+            final @NotNull GrammarContext context,
             final @NotNull Rule<T> rule
     ) {
         try {
@@ -80,7 +80,7 @@ public abstract class Grammar<R> {
     }
 
     public static <T> @NotNull Collection<T> parseOneOrMoreOf(
-            final @NotNull Context context,
+            final @NotNull GrammarContext context,
             final @NotNull Rule<T> rule
     ) throws Unroll {
         final List<T> data = new ArrayList<>();
@@ -96,7 +96,7 @@ public abstract class Grammar<R> {
     }
 
     public static <T> @NotNull Collection<T> parseZeroOrMoreOf(
-            final @NotNull Context context,
+            final @NotNull GrammarContext context,
             final @NotNull Rule<T> rule
     ) {
         final List<T> data = new ArrayList<>();
@@ -111,7 +111,7 @@ public abstract class Grammar<R> {
     }
 
     @SafeVarargs
-    public static <T> T parseUnionOf(final @NotNull Context context, final @NotNull Rule<? extends T>... rules)
+    public static <T> T parseUnionOf(final @NotNull GrammarContext context, final @NotNull Rule<? extends T>... rules)
             throws Unroll {
         final var mark = context.index();
 

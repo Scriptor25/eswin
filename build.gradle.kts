@@ -32,6 +32,7 @@ repositories {
 dependencies {
     implementation("org.jetbrains:annotations:24.0.0")
     implementation("com.formdev:flatlaf:3.6")
+    implementation("org.postgresql:postgresql:42.7.7")
 }
 
 javafx {

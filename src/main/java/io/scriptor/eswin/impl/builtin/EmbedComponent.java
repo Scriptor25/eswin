@@ -3,6 +3,7 @@ package io.scriptor.eswin.impl.builtin;
 import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
+import io.scriptor.eswin.component.ContextProvider;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
@@ -20,11 +21,12 @@ public class EmbedComponent extends ComponentBase {
     private final JFXPanel root;
 
     public EmbedComponent(
+            final @NotNull ContextProvider provider,
             final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
-        super(parent, attributes, text);
+        super(provider, parent, attributes, text);
 
         apply(root = new JFXPanel());
 

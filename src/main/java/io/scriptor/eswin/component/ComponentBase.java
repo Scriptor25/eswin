@@ -20,9 +20,10 @@ import static io.scriptor.eswin.util.EslHelper.observeSegments;
 public abstract class ComponentBase {
 
     private final String id;
+    private final ContextProvider provider;
     private final ComponentBase parent;
     private final AttributeSet attributes;
-    private final Map<String, Indexed<ComponentBase>> children = new HashMap<>();
+    private final Map<String, Index<ComponentBase>> children = new HashMap<>();
 
     private final String[] segments;
 
@@ -32,6 +33,7 @@ public abstract class ComponentBase {
     private ComponentBase root;
 
     public ComponentBase(
+            final @NotNull ContextProvider provider,
             final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
@@ -39,6 +41,7 @@ public abstract class ComponentBase {
         this.id = attributes.has("id")
                   ? attributes.get("id")
                   : UUID.randomUUID().toString();
+        this.provider = provider;
         this.parent = parent;
         this.attributes = attributes;
 
@@ -52,8 +55,21 @@ public abstract class ComponentBase {
         });
     }
 
+    protected void onBeginFrame() {
+    }
+
+    protected void onEndFrame() {
+    }
+
+    protected void onAttached() {
+    }
+
     public @NotNull String getId() {
         return id;
+    }
+
+    public @NotNull ContextProvider getProvider() {
+        return provider;
     }
 
     public @Nullable ComponentBase getParent() {
@@ -62,6 +78,10 @@ public abstract class ComponentBase {
 
     public @NotNull AttributeSet getAttributes() {
         return attributes;
+    }
+
+    public @NotNull String getName() {
+        return getClass().getAnnotation(Component.class).value();
     }
 
     public void setRoot(final @NotNull ComponentBase root) {
@@ -76,16 +96,29 @@ public abstract class ComponentBase {
 
     public @NotNull JComponent getJRoot() {
         if (root == null)
-            throw new IllegalStateException();
+            throw new IllegalStateException("component '%s' is missing a swing root component".formatted(getName()));
         return root.getJRoot();
     }
 
-    public void render(final @NotNull Container container, final boolean constraint) {
-        if (constraint) {
+    public void attach(final @NotNull Container container, final boolean constraint) {
+        if (constraint)
             container.add(getJRoot(), getConstraints());
-            return;
-        }
-        container.add(getJRoot());
+        else
+            container.add(getJRoot());
+
+        onAttached();
+    }
+
+    public boolean attached() {
+        return getJRoot().getParent() != null;
+    }
+
+    public @NotNull Container detach() {
+        final var container = getJRoot().getParent();
+        if (container == null)
+            throw new IllegalStateException("component '%s' is not attached to anything".formatted(getName()));
+        container.remove(getJRoot());
+        return container;
     }
 
     protected void apply(final @NotNull JComponent component) {
@@ -110,6 +143,48 @@ public abstract class ComponentBase {
 
         if (outside != null || inside != null)
             component.setBorder(new CompoundBorder(outside, inside));
+
+        if (attributes.has("background")) {
+            final var value  = attributes.get("background");
+            final var values = value.trim().split("\\s+");
+
+            final Color color = switch (values.length) {
+                case 1 -> {
+                    if (!values[0].startsWith("#"))
+                        throw new IllegalStateException();
+                    final var string = values[0].substring(1);
+                    yield switch (string.length()) {
+                        case 3 -> {
+                            final var r = string.charAt(0);
+                            final var g = string.charAt(1);
+                            final var b = string.charAt(2);
+                            yield new Color(
+                                    Integer.parseUnsignedInt("%1$c%1$c%2$c%2$c%3$c%3$c".formatted(r, g, b), 0x10),
+                                    false);
+                        }
+                        case 6 -> new Color(Integer.parseUnsignedInt(string, 0x10), false);
+                        case 8 -> new Color(Integer.parseUnsignedInt(string, 0x10), true);
+                        default -> throw new IllegalStateException();
+                    };
+                }
+                case 3 -> {
+                    final var r = Integer.parseUnsignedInt(values[0], 10);
+                    final var g = Integer.parseUnsignedInt(values[1], 10);
+                    final var b = Integer.parseUnsignedInt(values[2], 10);
+                    yield new Color(r, g, b);
+                }
+                case 4 -> {
+                    final var r = Integer.parseUnsignedInt(values[0], 10);
+                    final var g = Integer.parseUnsignedInt(values[1], 10);
+                    final var b = Integer.parseUnsignedInt(values[2], 10);
+                    final var a = Integer.parseUnsignedInt(values[3], 10);
+                    yield new Color(r, g, b, a);
+                }
+                default -> throw new IllegalStateException();
+            };
+            component.setBackground(color);
+            component.setOpaque(true);
+        }
 
         component.setVisible(!attributes.has("hidden"));
     }
@@ -164,18 +239,26 @@ public abstract class ComponentBase {
     }
 
     public @NotNull Stream<? extends ComponentBase> getChildren() {
-        return children.values().stream().sorted().map(Indexed::value);
+        return children.values().stream().sorted().map(Index::value);
     }
 
-    public void addChild(final @NotNull String id, final @NotNull ComponentBase child) {
+    public void beginFrame() {
+        onBeginFrame();
+    }
+
+    public void endFrame() {
+        onEndFrame();
+    }
+
+    public void insert(final @NotNull String id, final @NotNull ComponentBase child) {
         if (children.containsKey(id))
             throw new IllegalStateException();
 
-        children.put(id, new Indexed<>(children.size(), child));
+        children.put(id, new Index<>(children.size(), child));
     }
 
-    public void addChild(final @NotNull ComponentBase child) {
-        addChild(child.id, child);
+    public void insert(final @NotNull ComponentBase child) {
+        insert(child.id, child);
     }
 
     public boolean hasChild(final @NotNull String id) {
@@ -199,7 +282,7 @@ public abstract class ComponentBase {
 
         final var child = children.get(id).value();
         if (!type.isInstance(child))
-            throw new IllegalStateException("child with id '%s' is not an instance of type '%s'".formatted(id, type));
+            throw new IllegalStateException("child with id '%s' is not an instance of typeName '%s'".formatted(id, type));
 
         return type.cast(child);
     }

@@ -9,16 +9,19 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 
-@Component("fragment")
-public class FragmentComponent extends ComponentBase {
+@Component("route")
+public class RouteComponent extends ComponentBase {
 
-    public FragmentComponent(
+    public RouteComponent(
             final @NotNull ContextProvider provider,
             final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
         super(provider, parent, attributes, text);
+
+        final var context = provider.use(RouterContext.class);
+        context.addRoute(this);
     }
 
     @Override

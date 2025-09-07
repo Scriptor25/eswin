@@ -5,5 +5,5 @@ import org.jetbrains.annotations.NotNull;
 @FunctionalInterface
 public interface Rule<R> {
 
-    R parse(final @NotNull Context context) throws Unroll;
+    R parse(final @NotNull GrammarContext context) throws Unroll;
 }

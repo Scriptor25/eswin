@@ -2,7 +2,9 @@ package io.scriptor.eswin.registry;
 
 import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.ComponentBase;
+import io.scriptor.eswin.component.ContextProvider;
 import io.scriptor.eswin.component.MutableAttributeSet;
+import io.scriptor.eswin.util.Log;
 import io.scriptor.eswin.xml.XmlAttribute;
 import io.scriptor.eswin.xml.XmlElement;
 import org.jetbrains.annotations.NotNull;
@@ -12,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 public class Registry {
 
@@ -34,24 +37,34 @@ public class Registry {
         return components.get(name);
     }
 
-    public @NotNull ComponentBase instantiate(final @NotNull String name) {
-        return instantiate(null, name, new MutableAttributeSet(), "");
+    public @NotNull Optional<ComponentBase> instantiate(
+            final @NotNull ContextProvider provider,
+            final @NotNull String name
+    ) {
+        return instantiate(provider, null, name, new MutableAttributeSet(), "");
     }
 
-    public @NotNull ComponentBase instantiate(
+    public @NotNull Optional<ComponentBase> instantiate(
+            final @NotNull ContextProvider provider,
             final @Nullable ComponentBase parent,
             final @NotNull XmlElement element
     ) {
-        final var instance = instantiate(parent, element.name(), element.attributes(), element.text());
+        return instantiate(provider, parent, element.name(), element.attributes(), element.text())
+                .map(instance -> {
+                    instance.beginFrame();
+                    element.elements()
+                           .map(e -> instantiate(provider, parent, e))
+                           .filter(Optional::isPresent)
+                           .map(Optional::get)
+                           .forEach(instance::insert);
+                    instance.endFrame();
 
-        element.elements()
-               .map(e -> instantiate(parent, e))
-               .forEach(instance::addChild);
-
-        return instance;
+                    return instance;
+                });
     }
 
-    public @NotNull ComponentBase instantiate(
+    public @NotNull Optional<ComponentBase> instantiate(
+            final @NotNull ContextProvider provider,
             final @Nullable ComponentBase parent,
             final @NotNull String name,
             final @NotNull XmlAttribute[] attributes,
@@ -61,10 +74,11 @@ public class Registry {
         for (final var attribute : attributes)
             set.put(attribute.name(), attribute.value());
 
-        return instantiate(parent, name, set, text);
+        return instantiate(provider, parent, name, set, text);
     }
 
-    public @NotNull ComponentBase instantiate(
+    public @NotNull Optional<ComponentBase> instantiate(
+            final @NotNull ContextProvider provider,
             final @Nullable ComponentBase parent,
             final @NotNull String name,
             final @NotNull AttributeSet attributes,
@@ -76,20 +90,24 @@ public class Registry {
 
         final ComponentBase instance;
         try {
-            final var constructor = type.getConstructor(ComponentBase.class, AttributeSet.class, String.class);
+            final var constructor = type.getConstructor(ContextProvider.class,
+                                                        ComponentBase.class,
+                                                        AttributeSet.class,
+                                                        String.class);
 
-            instance = constructor.newInstance(parent, attributes, text);
+            instance = constructor.newInstance(provider, parent, attributes, text);
         } catch (final IllegalAccessException |
                        InstantiationException |
                        IllegalArgumentException |
                        NoSuchMethodException |
                        InvocationTargetException e) {
-            throw new RuntimeException(e);
+            Log.warn("when instantiating component '%s': %s", name, e);
+            return Optional.empty();
         }
 
         if (layout != null)
-            instance.setRoot(instantiate(instance, layout.root()));
+            instantiate(provider, instance, layout.root()).ifPresent(instance::setRoot);
 
-        return instance;
+        return Optional.of(instance);
     }
 }

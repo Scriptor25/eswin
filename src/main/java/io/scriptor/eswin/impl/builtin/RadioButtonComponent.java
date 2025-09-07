@@ -1,28 +1,29 @@
 package io.scriptor.eswin.impl.builtin;
 
-import io.scriptor.eswin.component.ActionComponentBase;
-import io.scriptor.eswin.component.AttributeSet;
-import io.scriptor.eswin.component.Component;
-import io.scriptor.eswin.component.ComponentBase;
+import io.scriptor.eswin.component.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.event.ActionListener;
 
 import static io.scriptor.eswin.component.Constants.parseSwing;
 
+
 @Component("radio-button")
-public class RadioButtonComponent extends ActionComponentBase {
+public class RadioButtonComponent extends ActionComponentBase<RadioButtonComponent, RadioButtonComponent.Payload> {
+
+    public record Payload() {
+    }
 
     private final JRadioButton root;
 
     public RadioButtonComponent(
+            final @NotNull ContextProvider provider,
             final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
-        super(parent, attributes, text);
+        super(provider, parent, attributes, text);
 
         apply(root = new JRadioButton());
 
@@ -36,8 +37,10 @@ public class RadioButtonComponent extends ActionComponentBase {
     }
 
     @Override
-    public void addListener(final @NotNull ActionListener listener) {
-        root.addActionListener(listener);
+    public void addListener(final @NotNull ActionListener<RadioButtonComponent, Payload> listener) {
+        root.addActionListener(event -> {
+            listener.callback(new ActionEvent<>(this, new Payload()));
+        });
     }
 
     @Override

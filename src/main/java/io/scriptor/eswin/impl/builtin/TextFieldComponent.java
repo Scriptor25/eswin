@@ -1,28 +1,28 @@
 package io.scriptor.eswin.impl.builtin;
 
-import io.scriptor.eswin.component.ActionComponentBase;
-import io.scriptor.eswin.component.AttributeSet;
-import io.scriptor.eswin.component.Component;
-import io.scriptor.eswin.component.ComponentBase;
+import io.scriptor.eswin.component.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.event.ActionListener;
 
 import static io.scriptor.eswin.component.Constants.parseSwing;
 
 @Component("text-field")
-public class TextFieldComponent extends ActionComponentBase {
+public class TextFieldComponent extends ActionComponentBase<TextFieldComponent, TextFieldComponent.Payload> {
+
+    public record Payload() {
+    }
 
     private final JTextField root;
 
     public TextFieldComponent(
+            final @NotNull ContextProvider provider,
             final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
-        super(parent, attributes, text);
+        super(provider, parent, attributes, text);
 
         apply(root = new JTextField());
 
@@ -39,8 +39,10 @@ public class TextFieldComponent extends ActionComponentBase {
     }
 
     @Override
-    public void addListener(final @NotNull ActionListener listener) {
-        root.addActionListener(listener);
+    public void addListener(final @NotNull ActionListener<TextFieldComponent, Payload> listener) {
+        root.addActionListener(event -> {
+            listener.callback(new ActionEvent<>(this, new Payload()));
+        });
     }
 
     @Override

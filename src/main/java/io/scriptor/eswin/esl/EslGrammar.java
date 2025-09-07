@@ -2,7 +2,7 @@ package io.scriptor.eswin.esl;
 
 import io.scriptor.eswin.esl.runtime.*;
 import io.scriptor.eswin.esl.tree.*;
-import io.scriptor.eswin.grammar.Context;
+import io.scriptor.eswin.grammar.GrammarContext;
 import io.scriptor.eswin.grammar.Grammar;
 import io.scriptor.eswin.grammar.Unroll;
 import org.jetbrains.annotations.NotNull;
@@ -27,15 +27,15 @@ public class EslGrammar extends Grammar<EslExpression> {
     // constant_float  = ( constant_int '.' constant_int? ) | ( constant_int? '.' constant_int )
 
     @Override
-    protected @NotNull EslExpression parseRoot(final @NotNull Context context) throws Unroll {
+    protected @NotNull EslExpression parseRoot(final @NotNull GrammarContext context) throws Unroll {
         return expression(context);
     }
 
-    protected @NotNull EslExpression expression(final @NotNull Context context) throws Unroll {
+    protected @NotNull EslExpression expression(final @NotNull GrammarContext context) throws Unroll {
         return parseUnionOf(context, this::call, this::store, this::member, this::name, this::constant);
     }
 
-    protected @NotNull EslCallExpression call(final @NotNull Context context) throws Unroll {
+    protected @NotNull EslCallExpression call(final @NotNull GrammarContext context) throws Unroll {
         return wrap(ctx -> {
             final var callee = member(ctx);
 
@@ -62,7 +62,7 @@ public class EslGrammar extends Grammar<EslExpression> {
         }).parse(context);
     }
 
-    protected @NotNull EslStoreExpression store(final @NotNull Context context) throws Unroll {
+    protected @NotNull EslStoreExpression store(final @NotNull GrammarContext context) throws Unroll {
         return wrap(ctx -> {
             final var dst = member(ctx);
 
@@ -75,7 +75,7 @@ public class EslGrammar extends Grammar<EslExpression> {
         }).parse(context);
     }
 
-    protected @NotNull EslExpression member(final @NotNull Context context) throws Unroll {
+    protected @NotNull EslExpression member(final @NotNull GrammarContext context) throws Unroll {
         return wrap(ctx -> {
             final var name = name(ctx);
             final var segments = parseOneOrMoreOf(ctx, wrap(ctx1 -> {
@@ -92,7 +92,7 @@ public class EslGrammar extends Grammar<EslExpression> {
         }).parse(context);
     }
 
-    protected @NotNull EslNameExpression name(final @NotNull Context context) throws Unroll {
+    protected @NotNull EslNameExpression name(final @NotNull GrammarContext context) throws Unroll {
         context.whitespace();
         return wrap(ctx -> {
             final var fst = parseUnionOf(ctx, this::letter, ctx1 -> ctx1.expect('_'));
@@ -111,11 +111,11 @@ public class EslGrammar extends Grammar<EslExpression> {
         }).parse(context);
     }
 
-    protected @NotNull EslConstant constant(final @NotNull Context context) throws Unroll {
+    protected @NotNull EslConstant constant(final @NotNull GrammarContext context) throws Unroll {
         return parseUnionOf(context, this::constantString, this::constantChar, this::constantInt, this::constantFloat);
     }
 
-    protected @NotNull EslConstantString constantString(final @NotNull Context context) throws Unroll {
+    protected @NotNull EslConstantString constantString(final @NotNull GrammarContext context) throws Unroll {
         context.whitespace();
         return wrap(ctx -> {
             ctx.expect('"');
@@ -129,7 +129,7 @@ public class EslGrammar extends Grammar<EslExpression> {
         }).parse(context);
     }
 
-    protected @NotNull EslConstantChar constantChar(final @NotNull Context context) throws Unroll {
+    protected @NotNull EslConstantChar constantChar(final @NotNull GrammarContext context) throws Unroll {
         context.whitespace();
         return wrap(ctx -> {
             ctx.expect('\'');
@@ -140,7 +140,7 @@ public class EslGrammar extends Grammar<EslExpression> {
         }).parse(context);
     }
 
-    protected @NotNull EslConstantInt constantInt(final @NotNull Context context) throws Unroll {
+    protected @NotNull EslConstantInt constantInt(final @NotNull GrammarContext context) throws Unroll {
         context.whitespace();
         return wrap(ctx -> {
 
@@ -165,7 +165,7 @@ public class EslGrammar extends Grammar<EslExpression> {
         }).parse(context);
     }
 
-    protected @NotNull EslConstantFloat constantFloat(final @NotNull Context context) throws Unroll {
+    protected @NotNull EslConstantFloat constantFloat(final @NotNull GrammarContext context) throws Unroll {
         context.whitespace();
         return parseUnionOf(
                 context,
@@ -187,21 +187,21 @@ public class EslGrammar extends Grammar<EslExpression> {
                 }));
     }
 
-    protected int letter(final @NotNull Context context) throws Unroll {
+    protected int letter(final @NotNull GrammarContext context) throws Unroll {
         final var mark = context.index();
         if (!Character.isLetter(context.get()))
             throw new Unroll(context, mark);
         return context.skip();
     }
 
-    protected int digit(final @NotNull Context context) throws Unroll {
+    protected int digit(final @NotNull GrammarContext context) throws Unroll {
         final var mark = context.index();
         if (!Character.isDigit(context.get()))
             throw new Unroll(context, mark);
         return context.skip();
     }
 
-    protected int nonZeroDigit(final @NotNull Context context) throws Unroll {
+    protected int nonZeroDigit(final @NotNull GrammarContext context) throws Unroll {
         final var mark = context.index();
         if (context.get() == '0' || !Character.isDigit(context.get()))
             throw new Unroll(context, mark);

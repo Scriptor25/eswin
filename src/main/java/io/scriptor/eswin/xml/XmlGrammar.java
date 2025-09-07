@@ -1,6 +1,6 @@
 package io.scriptor.eswin.xml;
 
-import io.scriptor.eswin.grammar.Context;
+import io.scriptor.eswin.grammar.GrammarContext;
 import io.scriptor.eswin.grammar.Grammar;
 import io.scriptor.eswin.grammar.Unroll;
 import org.jetbrains.annotations.NotNull;
@@ -45,7 +45,7 @@ public class XmlGrammar extends Grammar<XmlDocument> {
     }
 
     @Override
-    protected XmlDocument parseRoot(final @NotNull Context context) throws Unroll {
+    protected XmlDocument parseRoot(final @NotNull GrammarContext context) throws Unroll {
         return wrap(ctx -> {
             final var instructions = parseZeroOrMoreOf(ctx, this::instruction);
             parseZeroOrMoreOf(ctx, this::comment);
@@ -55,7 +55,7 @@ public class XmlGrammar extends Grammar<XmlDocument> {
         }).parse(context);
     }
 
-    protected XmlInstruction instruction(final @NotNull Context context) throws Unroll {
+    protected XmlInstruction instruction(final @NotNull GrammarContext context) throws Unroll {
         context.whitespace();
         return wrap(ctx -> {
             ctx.expect("<?");
@@ -70,7 +70,7 @@ public class XmlGrammar extends Grammar<XmlDocument> {
         }).parse(context);
     }
 
-    protected XmlElement element(final @NotNull Context context) throws Unroll {
+    protected XmlElement element(final @NotNull GrammarContext context) throws Unroll {
         context.whitespace();
         return wrap(ctx -> {
             final var mark = ctx.index();
@@ -81,7 +81,7 @@ public class XmlGrammar extends Grammar<XmlDocument> {
             final var attributes = parseZeroOrMoreOf(ctx, this::attribute);
 
             ctx.whitespace();
-            if (ctx.skipif('/')) {
+            if (ctx.skipIf('/')) {
                 ctx.expect('>');
                 return new XmlElement(begin, attributes.toArray(XmlAttribute[]::new), new XmlBase[0]);
             }
@@ -107,7 +107,7 @@ public class XmlGrammar extends Grammar<XmlDocument> {
         }).parse(context);
     }
 
-    protected XmlComment comment(final @NotNull Context context) throws Unroll {
+    protected XmlComment comment(final @NotNull GrammarContext context) throws Unroll {
         context.whitespace();
         return wrap(ctx -> {
             ctx.expect("<!--");
@@ -122,7 +122,7 @@ public class XmlGrammar extends Grammar<XmlDocument> {
         }).parse(context);
     }
 
-    protected XmlText cdata(final @NotNull Context context) throws Unroll {
+    protected XmlText cdata(final @NotNull GrammarContext context) throws Unroll {
         context.whitespace();
         return wrap(ctx -> {
             ctx.expect("<![CDATA[");
@@ -137,7 +137,7 @@ public class XmlGrammar extends Grammar<XmlDocument> {
         }).parse(context);
     }
 
-    protected XmlText text(final @NotNull Context context) throws Unroll {
+    protected XmlText text(final @NotNull GrammarContext context) throws Unroll {
         return wrap(ctx -> {
             final var mark = ctx.index();
 
@@ -155,7 +155,7 @@ public class XmlGrammar extends Grammar<XmlDocument> {
         }).parse(context);
     }
 
-    protected Integer entity(final @NotNull Context context) throws Unroll {
+    protected Integer entity(final @NotNull GrammarContext context) throws Unroll {
         return wrap(ctx -> {
             final var mark = ctx.index();
 
@@ -170,7 +170,7 @@ public class XmlGrammar extends Grammar<XmlDocument> {
         }).parse(context);
     }
 
-    protected XmlAttribute attribute(final @NotNull Context context) throws Unroll {
+    protected XmlAttribute attribute(final @NotNull GrammarContext context) throws Unroll {
         context.whitespace();
         return wrap(ctx -> {
             final var name = identifier(ctx);
@@ -185,7 +185,7 @@ public class XmlGrammar extends Grammar<XmlDocument> {
         }).parse(context);
     }
 
-    protected String identifier(final @NotNull Context context) throws Unroll {
+    protected String identifier(final @NotNull GrammarContext context) throws Unroll {
         return wrap(ctx -> {
             final var elements = parseOneOrMoreOf(ctx, ctx1 -> {
                 if (!isIdentifier(ctx1.get()))
@@ -198,7 +198,7 @@ public class XmlGrammar extends Grammar<XmlDocument> {
         }).parse(context);
     }
 
-    protected String string(final @NotNull Context context) throws Unroll {
+    protected String string(final @NotNull GrammarContext context) throws Unroll {
         return wrap(ctx -> {
             ctx.expect('"');
             final var elements = parseZeroOrMoreOf(

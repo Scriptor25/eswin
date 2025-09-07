@@ -1,0 +1,68 @@
+package io.scriptor.eswin.impl;
+
+import io.scriptor.eswin.component.AttributeSet;
+import io.scriptor.eswin.component.Component;
+import io.scriptor.eswin.component.ComponentBase;
+import io.scriptor.eswin.component.ContextProvider;
+import io.scriptor.eswin.impl.builtin.ListComponent;
+import io.scriptor.eswin.impl.builtin.RouterContext;
+import io.scriptor.eswin.impl.builtin.TextFieldComponent;
+import io.scriptor.eswin.impl.db.DatabaseRef;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.sql.SQLException;
+
+@Component(
+        value = "database-select",
+        layout = "layout/database.select.xml"
+)
+public class DatabaseSelectComponent extends ComponentBase {
+
+    private final RouterContext ctxRouter;
+    private final SourceContext ctxSource;
+
+    public DatabaseSelectComponent(
+            final @NotNull ContextProvider provider,
+            final @Nullable ComponentBase parent,
+            final @NotNull AttributeSet attributes,
+            final @NotNull String text
+    ) {
+        super(provider, parent, attributes, text);
+
+        ctxRouter = provider.use(RouterContext.class);
+        ctxSource = provider.use(SourceContext.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    private ListComponent<String> list() {
+        return getChild("list", ListComponent.class);
+    }
+
+    @Override
+    protected void onAttached() {
+        final var list = list();
+        final var databases = ctxSource.databases()
+                                       .map(DatabaseRef::name)
+                                       .toArray(String[]::new);
+        list.setListData(databases);
+    }
+
+    public void select() throws SQLException {
+        final var list  = list();
+        final var value = list.getSelectedValue();
+
+        if (value.isEmpty())
+            return;
+
+        if (ctxSource.selectDatabase(value.get()))
+            ctxRouter.setActive("schema-select");
+    }
+
+    public void create() throws SQLException {
+        final var name = getChild("name", TextFieldComponent.class);
+
+        if (ctxSource.createDatabase(name.getText()))
+            ctxRouter.setActive("schema-select");
+    }
+}

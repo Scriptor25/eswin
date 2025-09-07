@@ -1,37 +1,37 @@
 package io.scriptor.eswin.impl.builtin;
 
-import io.scriptor.eswin.component.ActionComponentBase;
-import io.scriptor.eswin.component.AttributeSet;
+import io.scriptor.eswin.component.*;
 import io.scriptor.eswin.component.Component;
-import io.scriptor.eswin.component.ComponentBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
 @Component("radio-group")
-public class RadioGroupComponent extends ActionComponentBase {
+public class RadioGroupComponent extends ActionComponentBase<RadioGroupComponent, RadioGroupComponent.Payload> {
 
-    private final List<ActionListener> listeners = new ArrayList<>();
+    public record Payload() {
+    }
+
+    private final List<ActionListener<RadioGroupComponent, Payload>> listeners = new ArrayList<>();
 
     public RadioGroupComponent(
+            final @NotNull ContextProvider provider,
             final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
             final @NotNull String text
     ) {
-        super(parent, attributes, text);
+        super(provider, parent, attributes, text);
 
         if (attributes.has("default"))
             setSelected(attributes.get("default"));
     }
 
     @Override
-    public void addListener(final @NotNull ActionListener listener) {
+    public void addListener(final @NotNull ActionListener<RadioGroupComponent, Payload> listener) {
         listeners.add(listener);
     }
 
@@ -44,8 +44,8 @@ public class RadioGroupComponent extends ActionComponentBase {
                 return;
             }
 
-            final var event = new ActionEvent(child.getJRoot(), ActionEvent.ACTION_PERFORMED, "");
-            listeners.forEach(listener -> listener.actionPerformed(event));
+            final var event = new ActionEvent<>(this, new Payload());
+            listeners.forEach(listener -> listener.callback(event));
 
             child.setSelected(true);
         });
@@ -58,13 +58,27 @@ public class RadioGroupComponent extends ActionComponentBase {
     }
 
     @Override
-    public void render(final @NotNull Container container, final boolean constraint) {
-        getChildren().forEach(child -> child.render(container, constraint));
+    public void attach(final @NotNull Container container, final boolean constraint) {
+        getChildren().forEach(child -> child.attach(container, constraint));
     }
 
     @Override
-    public void addChild(final @NotNull String id, final @NotNull ComponentBase child) {
-        super.addChild(id, child);
+    public boolean attached() {
+        return getChildren().allMatch(ComponentBase::attached);
+    }
+
+    @Override
+    public @NotNull Container detach() {
+        return getChildren()
+                .map(ComponentBase::detach)
+                .distinct()
+                .findAny()
+                .orElseThrow();
+    }
+
+    @Override
+    public void insert(final @NotNull String id, final @NotNull ComponentBase child) {
+        super.insert(id, child);
 
         if (child instanceof RadioButtonComponent radio) {
             if (!has("selected"))
