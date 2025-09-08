@@ -159,7 +159,7 @@ public class NodeEditorComponent extends ComponentBase {
             out.label = table.name();
             for (final var column : table.columns()) {
                 final var attribute = new Attribute();
-                attribute.label = "%s (%s)".formatted(column.name(), column.typeName());
+                attribute.label = "%s (%s)".formatted(column.name(), column.getType());
                 out.attributes.add(attribute);
             }
 

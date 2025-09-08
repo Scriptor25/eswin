@@ -8,14 +8,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import java.awt.*;
 
-@Component("panel")
-public class PanelComponent extends ComponentBase {
+@Component("dialog")
+public class DialogComponent extends ComponentBase {
 
     private final JPanel root;
 
-    public PanelComponent(
+    public DialogComponent(
             final @NotNull ContextProvider provider,
             final @Nullable ComponentBase parent,
             final @NotNull AttributeSet attributes,
@@ -26,6 +27,9 @@ public class PanelComponent extends ComponentBase {
         apply(root = new JPanel());
 
         root.setLayout(new GridBagLayout());
+
+        root.setOpaque(true);
+        root.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
     }
 
     @Override
@@ -34,19 +38,16 @@ public class PanelComponent extends ComponentBase {
     }
 
     @Override
-    public void attach(
-            final @NotNull Container container,
-            final boolean constraint,
-            final @NotNull GridBagConstraints constraints
-    ) {
-        if (constraint) {
-            container.add(root, constraints);
-        } else {
-            container.add(root);
+    public void attach(final @NotNull Container container, final boolean constraint) {
+        if (container instanceof JLayeredPane layered) {
+            layered.add(root, JLayeredPane.POPUP_LAYER);
+
+            onAttached();
+
+            getChildren().forEach(child -> child.attach(root, true));
+            return;
         }
 
-        getChildren().forEach(child -> child.attach(root, true));
-
-        onAttached();
+        attach(container.getParent(), constraint);
     }
 }

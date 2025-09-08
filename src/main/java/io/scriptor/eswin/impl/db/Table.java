@@ -1,6 +1,6 @@
 package io.scriptor.eswin.impl.db;
 
-import io.scriptor.eswin.util.Reference;
+import io.scriptor.eswin.util.MutableReference;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -10,22 +10,22 @@ import java.util.function.Supplier;
 
 public final class Table {
 
+    public interface ColumnGenerator {
+
+        @NotNull Column from(final @NotNull Table table, final @NotNull String name);
+    }
+
     private final Schema schema;
     private final String name;
     private final Set<Column> columns = new HashSet<>();
-    private final Reference<PrimaryKey> primaryKey;
+    private final MutableReference<PrimaryKey> primaryKey = new MutableReference<>();
     private final Set<ForeignKey> importedKeys = new HashSet<>();
     private final Set<ForeignKey> exportedKeys = new HashSet<>();
     private final Set<UniqueConstraint> uniqueConstraints = new HashSet<>();
 
-    public Table(
-            final @NotNull Schema schema,
-            final @NotNull String name,
-            final @NotNull Reference<PrimaryKey> primaryKey
-    ) {
+    public Table(final @NotNull Schema schema, final @NotNull String name) {
         this.schema = schema;
         this.name = name;
-        this.primaryKey = primaryKey;
     }
 
     public @NotNull Column column(final @NotNull String name) {
@@ -36,14 +36,14 @@ public final class Table {
                 .orElseThrow(() -> new NoSuchElementException("column '%s.%s'".formatted(this, name)));
     }
 
-    public @NotNull Column column(final @NotNull String name, final @NotNull Supplier<Column> supplier) {
+    public @NotNull Column column(final @NotNull String name, final @NotNull ColumnGenerator generator) {
         final var opt = columns
                 .stream()
                 .filter(column -> column.name().equals(name))
                 .findAny();
         if (opt.isPresent())
             return opt.get();
-        final var column = supplier.get();
+        final var column = generator.from(this, name);
         columns.add(column);
         return column;
     }
@@ -99,7 +99,7 @@ public final class Table {
         return columns;
     }
 
-    public @NotNull Reference<PrimaryKey> primaryKey() {
+    public @NotNull MutableReference<PrimaryKey> primaryKey() {
         return primaryKey;
     }
 

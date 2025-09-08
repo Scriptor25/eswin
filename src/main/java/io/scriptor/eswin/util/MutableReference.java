@@ -2,7 +2,7 @@ package io.scriptor.eswin.util;
 
 import org.jetbrains.annotations.NotNull;
 
-public class MutableReference<T> implements Reference<T> {
+public final class MutableReference<T> {
 
     private T value;
 
@@ -13,12 +13,10 @@ public class MutableReference<T> implements Reference<T> {
         this.value = value;
     }
 
-    @Override
     public boolean has() {
         return value != null;
     }
 
-    @Override
     public @NotNull T get() {
         if (value == null)
             throw new IllegalStateException();

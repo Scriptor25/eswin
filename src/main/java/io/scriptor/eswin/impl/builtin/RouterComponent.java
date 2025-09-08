@@ -7,7 +7,6 @@ import io.scriptor.eswin.component.ContextProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +30,7 @@ public class RouterComponent extends ComponentBase {
 
             active = route;
 
-            attach(container, !(container instanceof RootPaneContainer));
+            attach(container, container.getLayout() instanceof GridBagLayout);
 
             container.revalidate();
             container.repaint();
@@ -72,7 +71,10 @@ public class RouterComponent extends ComponentBase {
     public void attach(final @NotNull Container container, final boolean constraint) {
         if (active == null)
             throw new IllegalStateException();
+
         active.attach(container, constraint);
+
+        onAttached();
     }
 
     @Override

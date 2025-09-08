@@ -60,6 +60,8 @@ public class RadioGroupComponent extends ActionComponentBase<RadioGroupComponent
     @Override
     public void attach(final @NotNull Container container, final boolean constraint) {
         getChildren().forEach(child -> child.attach(container, constraint));
+
+        onAttached();
     }
 
     @Override

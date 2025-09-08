@@ -87,7 +87,7 @@ public abstract class ComponentBase {
     public void setRoot(final @NotNull ComponentBase root) {
         this.root = root;
 
-        apply(this.root.getJRoot());
+        apply(getJRoot());
     }
 
     public @Nullable ComponentBase getRoot() {
@@ -96,17 +96,32 @@ public abstract class ComponentBase {
 
     public @NotNull JComponent getJRoot() {
         if (root == null)
-            throw new IllegalStateException("component '%s' is missing a swing root component".formatted(getName()));
+            throw new IllegalStateException("component '%s' is missing a root component".formatted(getName()));
         return root.getJRoot();
     }
 
     public void attach(final @NotNull Container container, final boolean constraint) {
-        if (constraint)
+        if (root != null) {
+            root.attach(container, constraint, getConstraints());
+        } else if (constraint) {
             container.add(getJRoot(), getConstraints());
-        else
+        } else {
             container.add(getJRoot());
+        }
 
         onAttached();
+    }
+
+    public void attach(
+            final @NotNull Container container,
+            final boolean constraint,
+            final @NotNull GridBagConstraints constraints
+    ) {
+        if (constraint) {
+            container.add(getJRoot(), constraints);
+        } else {
+            container.add(getJRoot());
+        }
     }
 
     public boolean attached() {
@@ -282,8 +297,7 @@ public abstract class ComponentBase {
 
         final var child = children.get(id).value();
         if (!type.isInstance(child))
-            throw new IllegalStateException("child with id '%s' is not an instance of typeName '%s'".formatted(id, type));
-
+            throw new IllegalStateException("child with id '%s' is not an instance of type '%s'".formatted(id, type));
         return type.cast(child);
     }
 

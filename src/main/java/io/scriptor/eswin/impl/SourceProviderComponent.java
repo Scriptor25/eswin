@@ -6,7 +6,6 @@ import io.scriptor.eswin.component.ComponentBase;
 import io.scriptor.eswin.component.ContextProvider;
 import io.scriptor.eswin.impl.db.*;
 import io.scriptor.eswin.util.Log;
-import io.scriptor.eswin.util.MutableReference;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -141,10 +140,8 @@ public class SourceProviderComponent extends ComponentBase {
 
             final var ref = server.database(databaseName);
 
-            database = new Database(ref);
+            database = databaseRefs.computeIfAbsent(ref, Database::new);
             schema = null;
-
-            databaseRefs.put(ref, database);
 
             connection = DriverManager.getConnection(server.url() + database.name(),
                                                      server.username(),
@@ -186,9 +183,7 @@ public class SourceProviderComponent extends ComponentBase {
         public boolean selectSchema(final @NotNull String schemaName) throws SQLException {
             final var ref = database.schema(schemaName);
 
-            schema = new Schema(ref);
-
-            schemaRefs.put(ref, schema);
+            schema = schemaRefs.computeIfAbsent(ref, Schema::new);
 
             Log.info("schema '%s'", schema.name());
 
@@ -200,9 +195,8 @@ public class SourceProviderComponent extends ComponentBase {
                 while (tablesSet.next()) {
                     final var tableName = tablesSet.getString("TABLE_NAME");
 
-                    final var pkReference = new MutableReference<PrimaryKey>();
-                    final var table       = new Table(schema, tableName, pkReference);
-                    schema.tables().add(table);
+                    final var table       = schema.table(tableName, Table::new);
+                    final var pkReference = table.primaryKey();
 
                     Log.info(" - table '%s'", tableName);
 
@@ -210,49 +204,44 @@ public class SourceProviderComponent extends ComponentBase {
                         while (columns.next()) {
                             final var columnName        = columns.getString("COLUMN_NAME");
                             final var dataType          = columns.getInt("DATA_TYPE");
-                            final var typeName          = columns.getString("TYPE_NAME");
                             final var columnSize        = columns.getInt("COLUMN_SIZE");
                             final var decimalDigits     = columns.getInt("DECIMAL_DIGITS");
                             final var numPrecisionRadix = columns.getInt("NUM_PREC_RADIX");
-                            final var nullable          = columns.getInt("NULLABLE");
                             final var remarks           = columns.getString("REMARKS");
                             final var columnDef         = columns.getString("COLUMN_DEF");
                             final var sqlDataType       = columns.getInt("SQL_DATA_TYPE");
                             final var sqlDatetimeSub    = columns.getInt("SQL_DATETIME_SUB");
                             final var charOctetLength   = columns.getInt("CHAR_OCTET_LENGTH");
                             final var ordinalPosition   = columns.getInt("ORDINAL_POSITION");
-                            final var isNullable        = columns.getString("IS_NULLABLE");
                             final var scopeCatalog      = columns.getString("SCOPE_CATALOG");
                             final var scopeSchema       = columns.getString("SCOPE_SCHEMA");
                             final var scopeTable        = columns.getString("SCOPE_TABLE");
                             final var sourceDataType    = columns.getShort("SOURCE_DATA_TYPE");
+                            final var isNullable        = columns.getString("IS_NULLABLE");
                             final var isAutoIncrement   = columns.getString("IS_AUTOINCREMENT");
                             final var isGeneratedColumn = columns.getString("IS_GENERATEDCOLUMN");
 
-                            final var column = new Column(table,
-                                                          columnName,
-                                                          dataType,
-                                                          typeName,
-                                                          columnSize,
-                                                          decimalDigits,
-                                                          numPrecisionRadix,
-                                                          nullable,
-                                                          remarks,
-                                                          columnDef,
-                                                          sqlDataType,
-                                                          sqlDatetimeSub,
-                                                          charOctetLength,
-                                                          ordinalPosition,
-                                                          isNullable,
-                                                          scopeCatalog,
-                                                          scopeSchema,
-                                                          scopeTable,
-                                                          sourceDataType,
-                                                          isAutoIncrement,
-                                                          isGeneratedColumn);
-                            table.columns().add(column);
+                            final var column = table.column(columnName, Column::new);
 
-                            Log.info("    - column '%s' (%s)", columnName, typeName);
+                            column.setType(ColumnType.from(dataType))
+                                  .setColumnSize(columnSize)
+                                  .setDecimalDigits(decimalDigits)
+                                  .setNumPrecisionRadix(numPrecisionRadix)
+                                  .setRemarks(remarks)
+                                  .setColumnDef(columnDef)
+                                  .setSqlDataType(sqlDataType)
+                                  .setSqlDatetimeSub(sqlDatetimeSub)
+                                  .setCharOctetLength(charOctetLength)
+                                  .setOrdinalPosition(ordinalPosition)
+                                  .setNullable(isNullable)
+                                  .setScopeCatalog(scopeCatalog)
+                                  .setScopeSchema(scopeSchema)
+                                  .setScopeTable(scopeTable)
+                                  .setSourceDataType(sourceDataType)
+                                  .setAutoIncrement(isAutoIncrement)
+                                  .setGeneratedColumn(isGeneratedColumn);
+
+                            Log.info("    - column '%s'", columnName);
                         }
                     }
 
@@ -271,35 +260,33 @@ public class SourceProviderComponent extends ComponentBase {
                             pkReference.set(key);
                         }
                     }
-                }
-            }
 
-            for (final var table : schema.tables()) {
-                try (final var keys = metadata.getImportedKeys(database.name(), schema.name(), table.name())) {
-                    getForeignKeys(table, keys, table.importedKeys());
-                }
+                    try (final var keys = metadata.getImportedKeys(database.name(), schema.name(), table.name())) {
+                        getForeignKeys(table, keys, table.importedKeys());
+                    }
 
-                try (final var keys = metadata.getExportedKeys(database.name(), schema.name(), table.name())) {
-                    getForeignKeys(table, keys, table.exportedKeys());
-                }
+                    try (final var keys = metadata.getExportedKeys(database.name(), schema.name(), table.name())) {
+                        getForeignKeys(table, keys, table.exportedKeys());
+                    }
 
-                try (final var constraints = metadata.getIndexInfo(database.name(),
-                                                                   schema.name(),
-                                                                   table.name(),
-                                                                   true,
-                                                                   false)) {
-                    while (constraints.next()) {
-                        final var filterCondition = constraints.getString("FILTER_CONDITION");
+                    try (final var constraints = metadata.getIndexInfo(database.name(),
+                                                                       schema.name(),
+                                                                       table.name(),
+                                                                       true,
+                                                                       false)) {
+                        while (constraints.next()) {
+                            final var filterCondition = constraints.getString("FILTER_CONDITION");
 
-                        final var constraintName = constraints.getString("INDEX_NAME");
-                        final var constraint = table.uniqueConstraint(constraintName, () -> (
-                                new UniqueConstraint(constraintName, table, filterCondition)
-                        ));
+                            final var constraintName = constraints.getString("INDEX_NAME");
+                            final var constraint = table.uniqueConstraint(constraintName, () -> (
+                                    new UniqueConstraint(constraintName, table, filterCondition)
+                            ));
 
-                        final var columnName = constraints.getString("COLUMN_NAME");
-                        final var column     = table.column(columnName);
+                            final var columnName = constraints.getString("COLUMN_NAME");
+                            final var column     = table.column(columnName);
 
-                        constraint.columns().add(column);
+                            constraint.columns().add(column);
+                        }
                     }
                 }
             }
@@ -342,8 +329,8 @@ public class SourceProviderComponent extends ComponentBase {
                          .database()
                          .schema(pkTableSchemaName),
                     Schema::new);
-            final var pkTable  = pkTableSchema.table(pkTableName);
-            final var pkColumn = pkTable.column(pkColumnName);
+            final var pkTable  = pkTableSchema.table(pkTableName, Table::new);
+            final var pkColumn = pkTable.column(pkColumnName, Column::new);
 
             final var fkTableSchemaName = keys.getString("FKTABLE_SCHEM");
             final var fkTableName       = keys.getString("FKTABLE_NAME");
@@ -354,8 +341,8 @@ public class SourceProviderComponent extends ComponentBase {
                          .database()
                          .schema(fkTableSchemaName),
                     Schema::new);
-            final var fkTable  = fkTableSchema.table(fkTableName);
-            final var fkColumn = fkTable.column(fkColumnName);
+            final var fkTable  = fkTableSchema.table(fkTableName, Table::new);
+            final var fkColumn = fkTable.column(fkColumnName, Column::new);
 
             final var updateRule    = ConstraintRule.of(keys.getShort("UPDATE_RULE"));
             final var deleteRule    = ConstraintRule.of(keys.getShort("DELETE_RULE"));
@@ -405,8 +392,10 @@ public class SourceProviderComponent extends ComponentBase {
     }
 
     @Override
-    public void attach(final @NotNull Container container, final boolean constraint) {
+    public void attach(final @NotNull Container container, boolean constraint) {
         getChildren().forEach(child -> child.attach(container, constraint));
+
+        onAttached();
     }
 
     @Override
