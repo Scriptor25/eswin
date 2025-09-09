@@ -1,7 +1,10 @@
 package io.scriptor.eswin.registry;
 
 import io.scriptor.eswin.component.*;
+import io.scriptor.eswin.component.attribute.AttributeSet;
+import io.scriptor.eswin.component.context.ContextProvider;
 import io.scriptor.eswin.util.Log;
+import io.scriptor.eswin.component.attribute.MutableAttributeSet;
 import io.scriptor.eswin.xml.XmlAttribute;
 import io.scriptor.eswin.xml.XmlElement;
 import org.jetbrains.annotations.NotNull;

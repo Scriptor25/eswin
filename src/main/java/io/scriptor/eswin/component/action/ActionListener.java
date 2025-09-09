@@ -1,4 +1,4 @@
-package io.scriptor.eswin.component;
+package io.scriptor.eswin.component.action;
 
 import org.jetbrains.annotations.NotNull;
 

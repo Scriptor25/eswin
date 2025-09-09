@@ -2,6 +2,9 @@ package io.scriptor.eswin.impl.builtin;
 
 import io.scriptor.eswin.component.*;
 import io.scriptor.eswin.component.Component;
+import io.scriptor.eswin.component.action.ActionComponentBase;
+import io.scriptor.eswin.component.action.ActionEvent;
+import io.scriptor.eswin.component.action.ActionListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;

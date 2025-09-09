@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-import static io.scriptor.eswin.component.Constants.parseSwing;
+import static io.scriptor.eswin.component.attribute.AttributeUtil.parseSwing;
 
 @Component("label")
 public class LabelComponent extends ComponentBase {

@@ -1,4 +1,4 @@
-package io.scriptor.eswin.component;
+package io.scriptor.eswin.component.attribute;
 
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
@@ -9,9 +9,10 @@ import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 
-public class Constants {
+public final class AttributeUtil {
 
-    public static final boolean DEBUG = false;
+    private AttributeUtil() {
+    }
 
     @MagicConstant(valuesFromClass = SwingConstants.class)
     public static int parseSwing(final @NotNull String value) {

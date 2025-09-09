@@ -3,7 +3,7 @@ package io.scriptor.eswin;
 import com.formdev.flatlaf.FlatDarculaLaf;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
-import io.scriptor.eswin.component.ContextProvider;
+import io.scriptor.eswin.component.context.ContextProvider;
 import io.scriptor.eswin.registry.ComponentData;
 import io.scriptor.eswin.registry.Registry;
 import io.scriptor.eswin.util.ClassScanner;

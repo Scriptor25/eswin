@@ -1,6 +1,6 @@
 package io.scriptor.eswin.impl;
 
-import io.scriptor.eswin.component.Context;
+import io.scriptor.eswin.component.context.Context;
 import io.scriptor.eswin.impl.db.DatabaseRef;
 import io.scriptor.eswin.impl.db.SchemaRef;
 import io.scriptor.eswin.impl.db.ServerRef;

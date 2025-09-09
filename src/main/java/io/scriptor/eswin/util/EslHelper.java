@@ -1,7 +1,7 @@
 package io.scriptor.eswin.util;
 
-import io.scriptor.eswin.component.ActionComponentBase;
-import io.scriptor.eswin.component.ActionListener;
+import io.scriptor.eswin.component.action.ActionComponentBase;
+import io.scriptor.eswin.component.action.ActionListener;
 import io.scriptor.eswin.component.ComponentBase;
 import io.scriptor.eswin.esl.EslFrame;
 import io.scriptor.eswin.esl.EslGrammar;

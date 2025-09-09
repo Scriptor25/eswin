@@ -3,7 +3,7 @@ package io.scriptor.eswin.impl;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
 import io.scriptor.eswin.component.ComponentInfo;
-import io.scriptor.eswin.component.ContextProvider;
+import io.scriptor.eswin.component.context.ContextProvider;
 import io.scriptor.eswin.impl.db.*;
 import io.scriptor.eswin.util.Log;
 import org.jetbrains.annotations.NotNull;

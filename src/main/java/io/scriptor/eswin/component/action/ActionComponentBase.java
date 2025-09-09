@@ -1,5 +1,7 @@
-package io.scriptor.eswin.component;
+package io.scriptor.eswin.component.action;
 
+import io.scriptor.eswin.component.ComponentBase;
+import io.scriptor.eswin.component.ComponentInfo;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

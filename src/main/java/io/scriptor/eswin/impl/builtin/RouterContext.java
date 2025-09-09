@@ -1,6 +1,6 @@
 package io.scriptor.eswin.impl.builtin;
 
-import io.scriptor.eswin.component.Context;
+import io.scriptor.eswin.component.context.Context;
 import org.jetbrains.annotations.NotNull;
 
 public interface RouterContext extends Context {

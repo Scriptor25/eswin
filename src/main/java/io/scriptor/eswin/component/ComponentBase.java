@@ -1,5 +1,9 @@
 package io.scriptor.eswin.component;
 
+import io.scriptor.eswin.component.attribute.AttributeSet;
+import io.scriptor.eswin.component.attribute.AttributeUtil;
+import io.scriptor.eswin.component.context.ContextProvider;
+import io.scriptor.eswin.util.Index;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,7 +17,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static io.scriptor.eswin.component.Constants.*;
+import static io.scriptor.eswin.component.attribute.AttributeUtil.*;
 import static io.scriptor.eswin.util.EslHelper.observeText;
 
 public abstract class ComponentBase {
@@ -126,7 +130,7 @@ public abstract class ComponentBase {
 
     protected void apply(final @NotNull JComponent component) {
         final var align = new Float[] { 0.0f, 0.0f };
-        if (getComponents(attributes, "align", "align-x", "align-y", align, Constants::parseAlignment)) {
+        if (getComponents(attributes, "align", "align-x", "align-y", align, AttributeUtil::parseAlignment)) {
             component.setAlignmentX(align[0]);
             component.setAlignmentY(align[1]);
         }
@@ -213,8 +217,8 @@ public abstract class ComponentBase {
                           "grid-width",
                           "grid-height",
                           grid,
-                          Constants::parseOffset,
-                          Constants::parseSize)) {
+                          AttributeUtil::parseOffset,
+                          AttributeUtil::parseSize)) {
             constraints.gridx = grid[0];
             constraints.gridy = grid[1];
             constraints.gridwidth = grid[2];
@@ -319,13 +323,5 @@ public abstract class ComponentBase {
 
         for (final var observer : observers.get(name))
             ((Consumer<T>) observer).accept(value);
-    }
-
-    public boolean isVisible() {
-        return getJRoot().isVisible();
-    }
-
-    public void setVisible(final boolean visible) {
-        getJRoot().setVisible(visible);
     }
 }

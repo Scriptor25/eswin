@@ -2,7 +2,7 @@ package io.scriptor.eswin.util;
 
 import org.jetbrains.annotations.NotNull;
 
-public final class MutableReference<T> {
+public final class MutableReference<T> implements Reference<T> {
 
     private T value;
 

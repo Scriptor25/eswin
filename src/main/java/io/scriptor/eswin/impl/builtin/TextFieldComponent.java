@@ -1,11 +1,14 @@
 package io.scriptor.eswin.impl.builtin;
 
 import io.scriptor.eswin.component.*;
+import io.scriptor.eswin.component.action.ActionComponentBase;
+import io.scriptor.eswin.component.action.ActionEvent;
+import io.scriptor.eswin.component.action.ActionListener;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-import static io.scriptor.eswin.component.Constants.parseSwing;
+import static io.scriptor.eswin.component.attribute.AttributeUtil.parseSwing;
 
 @Component("text-field")
 public class TextFieldComponent extends ActionComponentBase<TextFieldComponent, TextFieldComponent.Payload> {

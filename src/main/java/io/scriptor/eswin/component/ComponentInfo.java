@@ -1,5 +1,7 @@
 package io.scriptor.eswin.component;
 
+import io.scriptor.eswin.component.attribute.AttributeSet;
+import io.scriptor.eswin.component.context.ContextProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -16,8 +16,10 @@ repositories {
 
 dependencies {
     implementation(libs.jetbrains.annotations)
-    implementation(libs.formdev.flatlaf)
-    implementation(libs.postgresql.postgresql)
+    implementation(libs.flatlaf)
+    implementation(libs.postgresql)
+
+    // implementation(libs.reflections)
 }
 
 java {

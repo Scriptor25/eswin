@@ -3,7 +3,7 @@ package io.scriptor.eswin.impl.builtin;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
 import io.scriptor.eswin.component.ComponentInfo;
-import io.scriptor.eswin.component.ContextProvider;
+import io.scriptor.eswin.component.context.ContextProvider;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
