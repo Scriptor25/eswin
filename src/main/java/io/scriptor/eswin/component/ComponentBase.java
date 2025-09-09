@@ -14,8 +14,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static io.scriptor.eswin.component.Constants.*;
-import static io.scriptor.eswin.util.EslHelper.getSegments;
-import static io.scriptor.eswin.util.EslHelper.observeSegments;
+import static io.scriptor.eswin.util.EslHelper.observeText;
 
 public abstract class ComponentBase {
 
@@ -25,34 +24,23 @@ public abstract class ComponentBase {
     private final AttributeSet attributes;
     private final Map<String, Index<ComponentBase>> children = new HashMap<>();
 
-    private final String[] segments;
-
     private final Map<String, Object> state = new HashMap<>();
     private final Map<String, List<Consumer<?>>> observers = new HashMap<>();
 
     private ComponentBase root;
 
-    public ComponentBase(
-            final @NotNull ContextProvider provider,
-            final @Nullable ComponentBase parent,
-            final @NotNull AttributeSet attributes,
-            final @NotNull String text
-    ) {
-        this.id = attributes.has("id")
-                  ? attributes.get("id")
+    public ComponentBase(final @NotNull ComponentInfo info) {
+
+        this.id = info.getAttributes().has("id")
+                  ? info.getAttributes().get("id")
                   : UUID.randomUUID().toString();
-        this.provider = provider;
-        this.parent = parent;
-        this.attributes = attributes;
 
-        final var expressions = getSegments(text);
-        this.segments = new String[expressions.length];
-        Arrays.fill(this.segments, "");
+        this.provider = info.getProvider();
+        this.parent = info.getParent();
+        this.attributes = info.getAttributes();
 
-        observeSegments(parent, expressions, (index, value) -> {
-            this.segments[index] = value.toString();
-            notify("#text", String.join("", this.segments));
-        });
+        if (info.useText())
+            observeText(info.getParent(), info.getText(), text -> notify("#text", text));
     }
 
     protected void onBeginFrame() {
@@ -322,6 +310,7 @@ public abstract class ComponentBase {
         observers.computeIfAbsent(name, _ -> new ArrayList<>()).add(observer);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> void notify(final @NotNull String name, final @NotNull T value) {
         state.put(name, value);
 

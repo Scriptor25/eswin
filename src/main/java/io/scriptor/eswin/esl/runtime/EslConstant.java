@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 public interface EslConstant<T> extends EslValue<T>, EslExpression {
 
     @Override
+    @SuppressWarnings("unchecked")
     default <V> @NotNull EslValue<V> evaluate(final @NotNull EslFrame frame, final @NotNull Class<V> type) {
         return (EslConstant<V>) this;
     }

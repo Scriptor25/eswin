@@ -1,11 +1,9 @@
 package io.scriptor.eswin.impl.builtin;
 
-import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
-import io.scriptor.eswin.component.ContextProvider;
+import io.scriptor.eswin.component.ComponentInfo;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,13 +13,8 @@ public class PanelComponent extends ComponentBase {
 
     private final JPanel root;
 
-    public PanelComponent(
-            final @NotNull ContextProvider provider,
-            final @Nullable ComponentBase parent,
-            final @NotNull AttributeSet attributes,
-            final @NotNull String text
-    ) {
-        super(provider, parent, attributes, text);
+    public PanelComponent(final @NotNull ComponentInfo info) {
+        super(info);
 
         apply(root = new JPanel());
 

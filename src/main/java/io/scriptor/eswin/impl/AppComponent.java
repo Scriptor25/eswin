@@ -1,11 +1,9 @@
 package io.scriptor.eswin.impl;
 
-import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
-import io.scriptor.eswin.component.ContextProvider;
+import io.scriptor.eswin.component.ComponentInfo;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 @Component(
         value = "app",
@@ -13,12 +11,7 @@ import org.jetbrains.annotations.Nullable;
 )
 public class AppComponent extends ComponentBase {
 
-    public AppComponent(
-            final @NotNull ContextProvider provider,
-            final @Nullable ComponentBase parent,
-            final @NotNull AttributeSet attributes,
-            final @NotNull String text
-    ) {
-        super(provider, parent, attributes, text);
+    public AppComponent(final @NotNull ComponentInfo info) {
+        super(info);
     }
 }

@@ -1,11 +1,9 @@
 package io.scriptor.eswin.impl.builtin;
 
-import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
-import io.scriptor.eswin.component.ContextProvider;
+import io.scriptor.eswin.component.ComponentInfo;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
@@ -16,20 +14,15 @@ public class LabelComponent extends ComponentBase {
 
     private final JLabel root;
 
-    public LabelComponent(
-            final @NotNull ContextProvider provider,
-            final @Nullable ComponentBase parent,
-            final @NotNull AttributeSet attributes,
-            final @NotNull String text
-    ) {
-        super(provider, parent, attributes, text);
+    public LabelComponent(final @NotNull ComponentInfo info) {
+        super(info.setUseText(true));
 
         apply(root = new JLabel());
 
-        if (attributes.has("h-align"))
-            root.setHorizontalAlignment(parseSwing(attributes.get("h-align")));
-        if (attributes.has("v-align"))
-            root.setVerticalAlignment(parseSwing(attributes.get("v-align")));
+        if (getAttributes().has("h-align"))
+            root.setHorizontalAlignment(parseSwing(getAttributes().get("h-align")));
+        if (getAttributes().has("v-align"))
+            root.setVerticalAlignment(parseSwing(getAttributes().get("v-align")));
 
         observe("#text", root::setText, String.class);
     }

@@ -1,11 +1,9 @@
 package io.scriptor.eswin.impl;
 
-import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
-import io.scriptor.eswin.component.ContextProvider;
+import io.scriptor.eswin.component.ComponentInfo;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,15 +33,10 @@ public class NodeEditorComponent extends ComponentBase {
 
     private final SourceContext ctxSource;
 
-    public NodeEditorComponent(
-            final @NotNull ContextProvider provider,
-            final @Nullable ComponentBase parent,
-            final @NotNull AttributeSet attributes,
-            final @NotNull String text
-    ) {
-        super(provider, parent, attributes, text);
+    public NodeEditorComponent(final @NotNull ComponentInfo info) {
+        super(info);
 
-        ctxSource = provider.use(SourceContext.class);
+        ctxSource = getProvider().use(SourceContext.class);
 
         apply(root = new JComponent() {
 

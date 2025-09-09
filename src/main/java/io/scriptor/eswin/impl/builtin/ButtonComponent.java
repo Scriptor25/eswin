@@ -3,7 +3,6 @@ package io.scriptor.eswin.impl.builtin;
 import io.scriptor.eswin.component.*;
 import io.scriptor.eswin.component.Component;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,13 +15,8 @@ public class ButtonComponent extends ActionComponentBase<ButtonComponent, Button
 
     private final JButton root;
 
-    public ButtonComponent(
-            final @NotNull ContextProvider provider,
-            final @Nullable ComponentBase parent,
-            final @NotNull AttributeSet attributes,
-            final @NotNull String text
-    ) {
-        super(provider, parent, attributes, text);
+    public ButtonComponent(final @NotNull ComponentInfo info) {
+        super(info.setUseText(true));
 
         apply(root = new JButton());
         root.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));

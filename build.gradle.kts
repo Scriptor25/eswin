@@ -44,3 +44,7 @@ javafx {
     version = "24.0.2"
     modules = listOf("javafx.controls", "javafx.swing", "javafx.web")
 }
+
+tasks.withType<JavaExec>().configureEach {
+    jvmArgs("--enable-native-access=ALL-UNNAMED")
+}

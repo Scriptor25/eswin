@@ -2,7 +2,6 @@ package io.scriptor.eswin.impl.builtin;
 
 import io.scriptor.eswin.component.*;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
@@ -16,24 +15,19 @@ public class TextFieldComponent extends ActionComponentBase<TextFieldComponent, 
 
     private final JTextField root;
 
-    public TextFieldComponent(
-            final @NotNull ContextProvider provider,
-            final @Nullable ComponentBase parent,
-            final @NotNull AttributeSet attributes,
-            final @NotNull String text
-    ) {
-        super(provider, parent, attributes, text);
+    public TextFieldComponent(final @NotNull ComponentInfo info) {
+        super(info.setUseText(true));
 
         apply(root = new JTextField());
 
-        if (attributes.has("columns"))
-            root.setColumns(Integer.parseUnsignedInt(attributes.get("columns"), 10));
+        if (getAttributes().has("columns"))
+            root.setColumns(Integer.parseUnsignedInt(getAttributes().get("columns"), 10));
 
-        if (attributes.has("h-align"))
-            root.setHorizontalAlignment(parseSwing(attributes.get("h-align")));
+        if (getAttributes().has("h-align"))
+            root.setHorizontalAlignment(parseSwing(getAttributes().get("h-align")));
 
-        if (attributes.has("default"))
-            root.setText(attributes.get("default"));
+        if (getAttributes().has("default"))
+            root.setText(getAttributes().get("default"));
 
         observe("#text", root::setText, String.class);
     }

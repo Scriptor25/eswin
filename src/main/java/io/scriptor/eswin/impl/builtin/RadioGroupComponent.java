@@ -3,7 +3,6 @@ package io.scriptor.eswin.impl.builtin;
 import io.scriptor.eswin.component.*;
 import io.scriptor.eswin.component.Component;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -18,16 +17,11 @@ public class RadioGroupComponent extends ActionComponentBase<RadioGroupComponent
 
     private final List<ActionListener<RadioGroupComponent, Payload>> listeners = new ArrayList<>();
 
-    public RadioGroupComponent(
-            final @NotNull ContextProvider provider,
-            final @Nullable ComponentBase parent,
-            final @NotNull AttributeSet attributes,
-            final @NotNull String text
-    ) {
-        super(provider, parent, attributes, text);
+    public RadioGroupComponent(final @NotNull ComponentInfo info) {
+        super(info);
 
-        if (attributes.has("default"))
-            setSelected(attributes.get("default"));
+        if (getAttributes().has("default"))
+            setSelected(getAttributes().get("default"));
     }
 
     @Override

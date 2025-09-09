@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 
 public class Main {
 
+    @SuppressWarnings("unchecked")
     public static void main(final @NotNull String @NotNull [] args) {
 
         FlatDarculaLaf.setup();

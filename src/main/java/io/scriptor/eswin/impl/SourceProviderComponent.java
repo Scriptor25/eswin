@@ -1,13 +1,12 @@
 package io.scriptor.eswin.impl;
 
-import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
+import io.scriptor.eswin.component.ComponentInfo;
 import io.scriptor.eswin.component.ContextProvider;
 import io.scriptor.eswin.impl.db.*;
 import io.scriptor.eswin.util.Log;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.sql.*;
@@ -369,13 +368,8 @@ public class SourceProviderComponent extends ComponentBase {
 
     private ContextProvider.ContextFrame frame;
 
-    public SourceProviderComponent(
-            final @NotNull ContextProvider provider,
-            final @Nullable ComponentBase parent,
-            final @NotNull AttributeSet attributes,
-            final @NotNull String text
-    ) {
-        super(provider, parent, attributes, text);
+    public SourceProviderComponent(final @NotNull ComponentInfo info) {
+        super(info);
 
         // TODO: load existing server configurations from application data
         // TODO: ---> implement application data

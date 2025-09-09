@@ -12,7 +12,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class EslHelper {
 
@@ -31,11 +33,16 @@ public class EslHelper {
             if (parent != null)
                 frame.put("this", parent);
             frame.put("event", event);
+
             expression.evaluate(frame, void.class);
         };
     }
 
-    public static @NotNull EslExpression[] getSegments(final @NotNull String text) {
+    public static void observeText(
+            final @Nullable ComponentBase parent,
+            final @NotNull String text,
+            final @NotNull Consumer<String> consumer
+    ) {
         final var grammar = new EslGrammar();
         final var context = new GrammarContext("<unknown>", text);
 
@@ -63,20 +70,20 @@ public class EslHelper {
             expressions.add(new EslConstantString(builder.toString()));
         }
 
-        return expressions.toArray(EslExpression[]::new);
-    }
+        final var expressionSegments = expressions.toArray(EslExpression[]::new);
+        final var textSegments       = new String[expressionSegments.length];
+        Arrays.fill(textSegments, "");
 
-    public static void observeSegments(
-            final @Nullable ComponentBase parent,
-            final @NotNull EslExpression[] expressions,
-            final @NotNull SegmentObserver observer
-    ) {
         final var frame = new EslFrame();
         if (parent != null)
             frame.put("this", parent);
-        for (int i = 0; i < expressions.length; ++i) {
+
+        for (int i = 0; i < expressionSegments.length; ++i) {
             final var index = i;
-            expressions[i].observe(frame, value -> observer.notify(index, value.toString()));
+            expressionSegments[i].observe(frame, value -> {
+                textSegments[index] = value.toString();
+                consumer.accept(String.join("", textSegments));
+            });
         }
     }
 }

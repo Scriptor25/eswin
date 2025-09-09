@@ -1,9 +1,6 @@
 package io.scriptor.eswin.registry;
 
-import io.scriptor.eswin.component.AttributeSet;
-import io.scriptor.eswin.component.ComponentBase;
-import io.scriptor.eswin.component.ContextProvider;
-import io.scriptor.eswin.component.MutableAttributeSet;
+import io.scriptor.eswin.component.*;
 import io.scriptor.eswin.util.Log;
 import io.scriptor.eswin.xml.XmlAttribute;
 import io.scriptor.eswin.xml.XmlElement;
@@ -90,12 +87,15 @@ public class Registry {
 
         final ComponentBase instance;
         try {
-            final var constructor = type.getConstructor(ContextProvider.class,
-                                                        ComponentBase.class,
-                                                        AttributeSet.class,
-                                                        String.class);
+            final var constructor = type.getConstructor(ComponentInfo.class);
 
-            instance = constructor.newInstance(provider, parent, attributes, text);
+            final var info = new ComponentInfo()
+                    .setProvider(provider)
+                    .setParent(parent)
+                    .setAttributes(attributes)
+                    .setText(text);
+
+            instance = constructor.newInstance(info);
         } catch (final IllegalAccessException |
                        InstantiationException |
                        IllegalArgumentException |

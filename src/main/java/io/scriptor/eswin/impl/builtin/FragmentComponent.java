@@ -1,24 +1,17 @@
 package io.scriptor.eswin.impl.builtin;
 
-import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
-import io.scriptor.eswin.component.ContextProvider;
+import io.scriptor.eswin.component.ComponentInfo;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 
 @Component("fragment")
 public class FragmentComponent extends ComponentBase {
 
-    public FragmentComponent(
-            final @NotNull ContextProvider provider,
-            final @Nullable ComponentBase parent,
-            final @NotNull AttributeSet attributes,
-            final @NotNull String text
-    ) {
-        super(provider, parent, attributes, text);
+    public FragmentComponent(final @NotNull ComponentInfo info) {
+        super(info);
     }
 
     @Override

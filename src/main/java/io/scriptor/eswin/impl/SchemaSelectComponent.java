@@ -1,15 +1,13 @@
 package io.scriptor.eswin.impl;
 
-import io.scriptor.eswin.component.AttributeSet;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
-import io.scriptor.eswin.component.ContextProvider;
+import io.scriptor.eswin.component.ComponentInfo;
 import io.scriptor.eswin.impl.builtin.ListComponent;
 import io.scriptor.eswin.impl.builtin.RouterContext;
 import io.scriptor.eswin.impl.builtin.TextFieldComponent;
 import io.scriptor.eswin.impl.db.SchemaRef;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
 
@@ -22,16 +20,11 @@ public class SchemaSelectComponent extends ComponentBase {
     private final RouterContext ctxRouter;
     private final SourceContext ctxSource;
 
-    public SchemaSelectComponent(
-            final @NotNull ContextProvider provider,
-            final @Nullable ComponentBase parent,
-            final @NotNull AttributeSet attributes,
-            final @NotNull String text
-    ) {
-        super(provider, parent, attributes, text);
+    public SchemaSelectComponent(final @NotNull ComponentInfo info) {
+        super(info);
 
-        ctxRouter = provider.use(RouterContext.class);
-        ctxSource = provider.use(SourceContext.class);
+        ctxRouter = getProvider().use(RouterContext.class);
+        ctxSource = getProvider().use(SourceContext.class);
     }
 
     @SuppressWarnings("unchecked")
