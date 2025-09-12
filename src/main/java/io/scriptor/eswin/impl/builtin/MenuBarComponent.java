@@ -3,28 +3,43 @@ package io.scriptor.eswin.impl.builtin;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
 import io.scriptor.eswin.component.ComponentInfo;
+import io.scriptor.eswin.component.context.ContextProvider.ContextFrame;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
 import java.awt.*;
 
-@Component("dialog")
-public class DialogComponent extends ComponentBase {
+@Component("menu-bar")
+public class MenuBarComponent extends ComponentBase {
 
-    private final JPanel root;
+    private final JMenuBar root;
+    private final MenuBarContext context = new MenuBarContext() {
 
+        @Override
+        public void addMenu(final @NotNull JMenu menu) {
+            root.add(menu);
+        }
+    };
+
+    private ContextFrame frame;
     private Container container;
 
-    public DialogComponent(final @NotNull ComponentInfo info) {
+    public MenuBarComponent(final @NotNull ComponentInfo info) {
         super(info);
 
-        apply(root = new JPanel());
+        apply(root = new JMenuBar());
+    }
 
-        root.setLayout(new GridBagLayout());
+    @Override
+    protected void onBeginFrame() {
+        super.onBeginFrame();
+        frame = getProvider().provide(MenuBarContext.class, context);
+    }
 
-        root.setOpaque(true);
-        root.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
+    @Override
+    protected void onEndFrame() {
+        super.onEndFrame();
+        frame.close();
     }
 
     @Override
@@ -38,10 +53,10 @@ public class DialogComponent extends ComponentBase {
     }
 
     private void attach(final @NotNull Container container) {
-        if (container instanceof JLayeredPane layered) {
-            layered.add(root, JLayeredPane.POPUP_LAYER);
+        if (container instanceof JFrame window) {
+            window.setJMenuBar(root);
 
-            getChildren().forEach(child -> child.attach(root, true));
+            getChildren().forEach(ComponentBase::notifyAttached);
 
             onAttached();
             return;
@@ -71,7 +86,7 @@ public class DialogComponent extends ComponentBase {
 
     @Override
     public @NotNull Container detach() {
-        getChildren().forEach(ComponentBase::detach);
+        getChildren().forEach(ComponentBase::notifyDetached);
 
         final var container = this.container;
         this.container = null;

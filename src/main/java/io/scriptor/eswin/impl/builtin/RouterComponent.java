@@ -98,13 +98,6 @@ public class RouterComponent extends ComponentBase {
     }
 
     @Override
-    public boolean attached() {
-        if (active == null)
-            throw new IllegalStateException();
-        return active.attached();
-    }
-
-    @Override
     public @NotNull Container detach() {
         if (active == null)
             throw new IllegalStateException();

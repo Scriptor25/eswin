@@ -39,6 +39,7 @@ public class SchemaSelectComponent extends ComponentBase {
         final var list = list();
         final var schemas = ctxSource.getSchemas()
                                      .map(SchemaRef::getName)
+                                     .sorted()
                                      .toArray(String[]::new);
         list.setListData(schemas);
     }

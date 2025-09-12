@@ -33,7 +33,7 @@ public class Registry {
 
     public @NotNull ComponentData get(final @NotNull String name) {
         if (!components.containsKey(name))
-            throw new NoSuchElementException("no component with name '%s'".formatted(name));
+            throw new NoSuchElementException("component with name '%s'".formatted(name));
         return components.get(name);
     }
 

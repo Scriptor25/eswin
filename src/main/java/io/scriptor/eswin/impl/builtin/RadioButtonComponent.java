@@ -21,7 +21,7 @@ public class RadioButtonComponent extends ActionComponentBase<RadioButtonCompone
     private final JRadioButton root;
 
     public RadioButtonComponent(final @NotNull ComponentInfo info) {
-        super(info.setUseText(true));
+        super(info.setObserveText(true));
 
         apply(root = new JRadioButton());
 

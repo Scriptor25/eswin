@@ -124,8 +124,4 @@ public class Main {
         frame.pack();
         frame.setVisible(true);
     }
-
-    public static void example() {
-        Log.info("Lorem ipsum");
-    }
 }

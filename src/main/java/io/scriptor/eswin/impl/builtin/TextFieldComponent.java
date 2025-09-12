@@ -20,7 +20,7 @@ public class TextFieldComponent extends ActionComponentBase<TextFieldComponent, 
     private final JTextField root;
 
     public TextFieldComponent(final @NotNull ComponentInfo info) {
-        super(info.setUseText(true));
+        super(info.setObserveText(true));
 
         apply(root = new JTextField());
 

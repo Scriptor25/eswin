@@ -1,5 +1,6 @@
 package io.scriptor.eswin.impl;
 
+import com.formdev.flatlaf.ui.FlatUIUtils;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
 import io.scriptor.eswin.component.ComponentInfo;
@@ -36,7 +37,12 @@ public class EditorComponent extends ComponentBase {
 
             @Override
             public void paint(final @NotNull Graphics g) {
-                final var g2 = (Graphics2D) g;
+                final var g2 = (Graphics2D) g.create();
+
+                FlatUIUtils.setRenderingHints(g2);
+
+                g2.setFont(getFont());
+                g2.setColor(getForeground());
 
                 final var label = "Table Editor";
                 final var sw    = g2.getFontMetrics().stringWidth(label);

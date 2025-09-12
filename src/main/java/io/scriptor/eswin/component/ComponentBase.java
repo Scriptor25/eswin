@@ -32,6 +32,7 @@ public abstract class ComponentBase {
     private final Map<String, List<Consumer<?>>> observers = new HashMap<>();
 
     private ComponentBase root;
+    private Container container;
 
     public ComponentBase(final @NotNull ComponentInfo info) {
 
@@ -43,8 +44,15 @@ public abstract class ComponentBase {
         this.parent = info.hasParent() ? info.getParent() : this;
         this.attributes = info.getAttributes();
 
-        if (info.useText())
+        if (info.observeText()) {
             observeText(getParent(), info.getText(), text -> notify("#text", text));
+        }
+
+        info.observedAttributes()
+            .forEach(name -> observeText(
+                    getParent(),
+                    info.getAttributes().get(name),
+                    text -> notify(name, text)));
     }
 
     protected void onBeginFrame() {
@@ -109,6 +117,8 @@ public abstract class ComponentBase {
     }
 
     public void attach(final @NotNull Container container, final boolean constraint) {
+        this.container = container;
+
         if (hasRoot()) {
             getRoot().attach(container, constraint, getConstraints());
         } else if (hasJRoot()) {
@@ -133,7 +143,15 @@ public abstract class ComponentBase {
     ) {
         if (hasRoot()) {
             getRoot().attach(container, constraint, constraints);
-        } else if (hasJRoot()) {
+
+            onAttached();
+            return;
+        }
+
+        this.container = container;
+
+        if (hasJRoot()) {
+
             if (constraint) {
                 container.add(getJRoot(), constraints);
             } else {
@@ -141,48 +159,39 @@ public abstract class ComponentBase {
             }
 
             getChildren().forEach(child -> child.attach(getJRoot(), true));
-        } else {
-            getChildren().forEach(child -> child.attach(container, constraint, constraints));
+
+            onAttached();
+            return;
         }
 
+        getChildren().forEach(child -> child.attach(container, constraint, constraints));
         onAttached();
     }
 
-    public boolean attached() {
-        return hasRoot()
-               ? getRoot().attached()
-               : hasJRoot()
-                 ? getJRoot().getParent() != null
-                 : getChildren().allMatch(ComponentBase::attached);
+    public void notifyAttached() {
+        getChildren().forEach(ComponentBase::notifyAttached);
+        onAttached();
     }
 
     public @NotNull Container detach() {
         if (hasRoot()) {
             final var container = getRoot().detach();
 
-            notifyDetached();
+            onDetached();
             return container;
         }
+
+        final var container = this.container;
+        this.container = null;
+
+        if (container == null)
+            throw new IllegalStateException("component '%s' is not attached to anything".formatted(getName()));
+
+        getChildren().forEach(ComponentBase::detach);
 
         if (hasJRoot()) {
-            getChildren().forEach(ComponentBase::notifyDetached);
-
-            final var container = getJRoot().getParent();
-            if (container == null)
-                throw new IllegalStateException("component '%s' is not attached to anything".formatted(getName()));
-
             container.remove(getJRoot());
-
-            onDetached();
-
-            return container;
         }
-
-        final var container = getChildren()
-                .map(ComponentBase::detach)
-                .distinct()
-                .findAny()
-                .orElseThrow();
 
         onDetached();
         return container;

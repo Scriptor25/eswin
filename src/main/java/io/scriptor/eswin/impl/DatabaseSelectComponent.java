@@ -39,6 +39,7 @@ public class DatabaseSelectComponent extends ComponentBase {
         final var list = list();
         final var databases = ctxSource.getDatabases()
                                        .map(DatabaseRef::getName)
+                                       .sorted()
                                        .toArray(String[]::new);
         list.setListData(databases);
     }

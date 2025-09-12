@@ -5,13 +5,18 @@ import io.scriptor.eswin.component.context.ContextProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Stream;
+
 public final class ComponentInfo {
 
     private ContextProvider provider;
     private ComponentBase parent;
     private AttributeSet attributes;
     private String text = "";
-    private boolean useText = false;
+    private boolean observeText = false;
+    private final Set<String> observedAttributes = new HashSet<>();
 
     public @NotNull ContextProvider getProvider() {
         if (provider == null)
@@ -59,12 +64,21 @@ public final class ComponentInfo {
         return this;
     }
 
-    public boolean useText() {
-        return useText;
+    public boolean observeText() {
+        return observeText;
     }
 
-    public @NotNull ComponentInfo setUseText(final boolean useText) {
-        this.useText = useText;
+    public @NotNull ComponentInfo setObserveText(final boolean observeText) {
+        this.observeText = observeText;
         return this;
+    }
+
+    public @NotNull ComponentInfo addObservedAttribute(final @NotNull String name) {
+        this.observedAttributes.add(name);
+        return this;
+    }
+
+    public @NotNull Stream<String> observedAttributes() {
+        return observedAttributes.stream();
     }
 }

@@ -1,5 +1,4 @@
 [libraries]
-jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version = "24.0.0" }
+jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version = "26.0.0" }
 flatlaf = { group = "com.formdev", name = "flatlaf", version = "3.6" }
 postgresql = { group = "org.postgresql", name = "postgresql", version = "42.7.7" }
-reflections = { group = "org.reflections", name = "reflections", version = "0.10.2" }

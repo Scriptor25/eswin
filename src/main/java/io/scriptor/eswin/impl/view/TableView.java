@@ -1,15 +1,24 @@
 package io.scriptor.eswin.impl.view;
 
+import io.scriptor.eswin.impl.model.Column;
 import io.scriptor.eswin.impl.model.Table;
-import io.scriptor.eswin.util.Log;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Comparator;
 
 public final class TableView {
+
+    private static final Color COLOR_NORMAL = new Color(0x474955);
+    private static final Color COLOR_HOVER = new Color(0x696A78);
+    private static final Color COLOR_SELECT = new Color(0x6D739F);
+    private static final Color COLOR_TEXT = new Color(0xffffff);
+    private static final Color COLOR_BORDER = new Color(0x212121);
+
+    private static final int PADDING = 10;
 
     private final Table table;
 
@@ -81,7 +90,10 @@ public final class TableView {
         height = 0;
 
         final var fontHeight = g2.getFontMetrics().getHeight();
-        final var columns    = table.getColumns().toList();
+        final var rowHeight  = fontHeight + PADDING;
+        final var columns = table.getColumns()
+                                 .sorted(Comparator.comparingInt(Column::getOrdinalPosition))
+                                 .toList();
 
         {
             final var label      = table.getName();
@@ -90,7 +102,7 @@ public final class TableView {
             if (width < labelWidth)
                 width = labelWidth;
 
-            height += fontHeight;
+            height += rowHeight;
         }
 
         columns.forEach(column -> {
@@ -100,32 +112,40 @@ public final class TableView {
             if (width < labelWidth)
                 width = labelWidth;
 
-            height += fontHeight;
+            height += rowHeight;
         });
+
+        width += 2 * PADDING;
+        height += 2 * PADDING;
 
         g2.setClip(x, y, width, height);
 
-        g2.setColor(new Color(this == selected
-                              ? 0xff0000
-                              : this == hovered
-                                ? 0xff00ff
-                                : 0x0000ff));
+        g2.setColor(this == selected
+                    ? COLOR_SELECT
+                    : this == hovered
+                      ? COLOR_HOVER
+                      : COLOR_NORMAL);
         g2.fillRect(x, y, width, height);
 
         {
             final var label = table.getName();
-            g2.setColor(new Color(0xffffff));
-            g2.drawString(label, x, y + fontHeight);
+
+            g2.setColor(COLOR_TEXT);
+            g2.drawString(label, x + PADDING, y + rowHeight);
         }
 
         for (int i = 0; i < columns.size(); ++i) {
             final var column = columns.get(i);
             final var label  = column.getName();
-            final var offset = (i + 1) * fontHeight;
+            final var offset = (i + 1) * rowHeight;
 
-            g2.setColor(new Color(0xffffff));
-            g2.drawString(label, x, y + offset + fontHeight);
+            g2.setColor(COLOR_TEXT);
+            g2.drawString(label, x + PADDING, y + offset + rowHeight);
         }
+
+        g2.setColor(COLOR_BORDER);
+        g2.setStroke(new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER));
+        g2.drawRect(x, y, width - 1, height - 1);
     }
 
     public void onDragBegin(final int x, final int y) {
