@@ -63,7 +63,10 @@ public class EditorComponent extends ComponentBase {
                 selected = hovered;
 
                 if (selected != null) {
-                    selected.onDragStart(event.getX(), event.getY());
+                    selected.onDragBegin(event.getX(), event.getY());
+
+                    tables.remove(selected);
+                    tables.add(selected);
 
                     root.repaint(selected.getBounds());
                 }
@@ -76,6 +79,8 @@ public class EditorComponent extends ComponentBase {
                 selected = null;
 
                 if (view != null) {
+                    view.onDragEnd(event.getX(), event.getY());
+
                     root.repaint(view.getBounds());
                 }
             }
@@ -94,9 +99,11 @@ public class EditorComponent extends ComponentBase {
             @Override
             public void mouseDragged(final @NotNull MouseEvent event) {
                 if (selected != null) {
-                    root.repaint(selected.getBounds());
+                    final var bounds = selected.getBounds();
                     selected.onDrag(event.getX(), event.getY());
-                    root.repaint(selected.getBounds());
+
+                    Rectangle.union(bounds, selected.getBounds(), bounds);
+                    root.repaint(bounds);
                 }
             }
 
@@ -105,15 +112,22 @@ public class EditorComponent extends ComponentBase {
                 final var ex = event.getX();
                 final var ey = event.getY();
 
+                final var previous = hovered;
                 hovered = null;
 
                 tables.forEach(view -> {
-                    if (view.getBounds().contains(ex, ey))
+                    if (view.getBounds().contains(ex, ey)) {
                         hovered = view;
+                    }
                 });
 
-                if (hovered != null)
+                if (previous != null && previous != hovered) {
+                    root.repaint(previous.getBounds());
+                }
+
+                if (hovered != null) {
                     root.repaint(hovered.getBounds());
+                }
             }
         });
     }

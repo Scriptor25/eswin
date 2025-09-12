@@ -128,15 +128,18 @@ public final class TableView {
         }
     }
 
-    public void onDragStart(final int x, final int y) {
+    public void onDragBegin(final int x, final int y) {
         dx = x - this.x;
-        dy = y - this.x;
-        Log.info("drag start");
+        dy = y - this.y;
+    }
+
+    public void onDragEnd(final int x, final int y) {
+        this.x = x - dx;
+        this.y = y - dy;
     }
 
     public void onDrag(final int x, final int y) {
         this.x = x - dx;
         this.y = y - dy;
-        Log.info("drag");
     }
 }
