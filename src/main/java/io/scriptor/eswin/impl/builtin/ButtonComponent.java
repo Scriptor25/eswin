@@ -1,7 +1,7 @@
 package io.scriptor.eswin.impl.builtin;
 
-import io.scriptor.eswin.component.*;
 import io.scriptor.eswin.component.Component;
+import io.scriptor.eswin.component.ComponentInfo;
 import io.scriptor.eswin.component.action.ActionComponentBase;
 import io.scriptor.eswin.component.action.ActionEvent;
 import io.scriptor.eswin.component.action.ActionListener;
@@ -32,6 +32,11 @@ public class ButtonComponent extends ActionComponentBase<ButtonComponent, Button
         root.addActionListener(event -> {
             listener.callback(new ActionEvent<>(this, new Payload()));
         });
+    }
+
+    @Override
+    public boolean hasJRoot() {
+        return true;
     }
 
     @Override

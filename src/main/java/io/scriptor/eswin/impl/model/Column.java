@@ -1,4 +1,4 @@
-package io.scriptor.eswin.impl.db;
+package io.scriptor.eswin.impl.model;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -11,7 +11,7 @@ public final class Column {
     private int decimalDigits;
     private int numPrecisionRadix;
     private String remarks;
-    private String columnDef;
+    private String columnDefault;
     private int sqlDataType;
     private int sqlDatetimeSub;
     private int charOctetLength;
@@ -32,11 +32,11 @@ public final class Column {
         this.name = name;
     }
 
-    public @NotNull Table table() {
+    public @NotNull Table getTable() {
         return table;
     }
 
-    public @NotNull String name() {
+    public @NotNull String getName() {
         return name;
     }
 
@@ -67,7 +67,7 @@ public final class Column {
         return this;
     }
 
-    public int numPrecisionRadix() {
+    public int getNumPrecisionRadix() {
         return numPrecisionRadix;
     }
 
@@ -76,7 +76,7 @@ public final class Column {
         return this;
     }
 
-    public @NotNull String remarks() {
+    public @NotNull String getRemarks() {
         return remarks;
     }
 
@@ -85,16 +85,16 @@ public final class Column {
         return this;
     }
 
-    public @NotNull String columnDef() {
-        return columnDef;
+    public @NotNull String getColumnDefault() {
+        return columnDefault;
     }
 
-    public @NotNull Column setColumnDef(final @NotNull String columnDef) {
-        this.columnDef = columnDef;
+    public @NotNull Column setColumnDefault(final @NotNull String columnDefault) {
+        this.columnDefault = columnDefault;
         return this;
     }
 
-    public int sqlDataType() {
+    public int getSqlDataType() {
         return sqlDataType;
     }
 
@@ -103,7 +103,7 @@ public final class Column {
         return this;
     }
 
-    public int sqlDatetimeSub() {
+    public int getSqlDatetimeSub() {
         return sqlDatetimeSub;
     }
 
@@ -112,7 +112,7 @@ public final class Column {
         return this;
     }
 
-    public int charOctetLength() {
+    public int getCharOctetLength() {
         return charOctetLength;
     }
 
@@ -121,7 +121,7 @@ public final class Column {
         return this;
     }
 
-    public int ordinalPosition() {
+    public int getOrdinalPosition() {
         return ordinalPosition;
     }
 
@@ -130,7 +130,7 @@ public final class Column {
         return this;
     }
 
-    public @NotNull String scopeCatalog() {
+    public @NotNull String getScopeCatalog() {
         return scopeCatalog;
     }
 
@@ -139,7 +139,7 @@ public final class Column {
         return this;
     }
 
-    public @NotNull String scopeSchema() {
+    public @NotNull String getScopeSchema() {
         return scopeSchema;
     }
 
@@ -148,7 +148,7 @@ public final class Column {
         return this;
     }
 
-    public @NotNull String scopeTable() {
+    public @NotNull String getScopeTable() {
         return scopeTable;
     }
 
@@ -195,6 +195,6 @@ public final class Column {
 
     @Override
     public @NotNull String toString() {
-        return "%s.%s".formatted(table, name);
+        return "%s->%s".formatted(table, name);
     }
 }

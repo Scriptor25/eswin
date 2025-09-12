@@ -6,7 +6,7 @@ import io.scriptor.eswin.component.ComponentInfo;
 import io.scriptor.eswin.impl.builtin.ListComponent;
 import io.scriptor.eswin.impl.builtin.RouterContext;
 import io.scriptor.eswin.impl.builtin.TextFieldComponent;
-import io.scriptor.eswin.impl.db.DatabaseRef;
+import io.scriptor.eswin.impl.model.DatabaseRef;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
@@ -34,9 +34,11 @@ public class DatabaseSelectComponent extends ComponentBase {
 
     @Override
     protected void onAttached() {
+        super.onAttached();
+
         final var list = list();
-        final var databases = ctxSource.databases()
-                                       .map(DatabaseRef::name)
+        final var databases = ctxSource.getDatabases()
+                                       .map(DatabaseRef::getName)
                                        .toArray(String[]::new);
         list.setListData(databases);
     }
@@ -48,14 +50,14 @@ public class DatabaseSelectComponent extends ComponentBase {
         if (value.isEmpty())
             return;
 
-        if (ctxSource.selectDatabase(value.get()))
-            ctxRouter.setActive("schema-select");
+        ctxSource.selectDatabase(value.get());
+        ctxRouter.setActive("schema-select");
     }
 
     public void create() throws SQLException {
         final var name = getChild("name", TextFieldComponent.class);
 
-        if (ctxSource.createDatabase(name.getText()))
-            ctxRouter.setActive("schema-select");
+        ctxSource.createDatabase(name.getText());
+        ctxRouter.setActive("schema-select");
     }
 }

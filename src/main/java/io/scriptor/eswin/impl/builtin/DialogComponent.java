@@ -26,6 +26,11 @@ public class DialogComponent extends ComponentBase {
     }
 
     @Override
+    public boolean hasJRoot() {
+        return true;
+    }
+
+    @Override
     public @NotNull JComponent getJRoot() {
         return root;
     }
@@ -35,9 +40,9 @@ public class DialogComponent extends ComponentBase {
         if (container instanceof JLayeredPane layered) {
             layered.add(root, JLayeredPane.POPUP_LAYER);
 
-            onAttached();
-
             getChildren().forEach(child -> child.attach(root, true));
+
+            onAttached();
             return;
         }
 

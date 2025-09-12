@@ -4,8 +4,8 @@ import io.scriptor.eswin.component.attribute.AttributeSet;
 import io.scriptor.eswin.component.attribute.AttributeUtil;
 import io.scriptor.eswin.component.context.ContextProvider;
 import io.scriptor.eswin.util.Index;
+import io.scriptor.eswin.util.Log;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static io.scriptor.eswin.component.attribute.AttributeUtil.*;
-import static io.scriptor.eswin.util.EslHelper.observeText;
+import static io.scriptor.eswin.util.ComponentEslUtil.observeText;
 
 public abstract class ComponentBase {
 
@@ -40,20 +40,27 @@ public abstract class ComponentBase {
                   : UUID.randomUUID().toString();
 
         this.provider = info.getProvider();
-        this.parent = info.getParent();
+        this.parent = info.hasParent() ? info.getParent() : this;
         this.attributes = info.getAttributes();
 
         if (info.useText())
-            observeText(info.getParent(), info.getText(), text -> notify("#text", text));
+            observeText(getParent(), info.getText(), text -> notify("#text", text));
     }
 
     protected void onBeginFrame() {
+        Log.info("begin frame '%s' (%s)", id, getName());
     }
 
     protected void onEndFrame() {
+        Log.info("end frame '%s' (%s)", id, getName());
     }
 
     protected void onAttached() {
+        Log.info("attached '%s' (%s)", id, getName());
+    }
+
+    protected void onDetached() {
+        Log.info("detached '%s' (%s)", id, getName());
     }
 
     public @NotNull String getId() {
@@ -64,7 +71,7 @@ public abstract class ComponentBase {
         return provider;
     }
 
-    public @Nullable ComponentBase getParent() {
+    public @NotNull ComponentBase getParent() {
         return parent;
     }
 
@@ -79,26 +86,41 @@ public abstract class ComponentBase {
     public void setRoot(final @NotNull ComponentBase root) {
         this.root = root;
 
-        apply(getJRoot());
+        if (hasJRoot())
+            apply(getJRoot());
     }
 
-    public @Nullable ComponentBase getRoot() {
+    public boolean hasRoot() {
+        return root != null;
+    }
+
+    public @NotNull ComponentBase getRoot() {
+        if (root == null)
+            throw new IllegalStateException("component '%s' is missing the root component".formatted(getName()));
         return root;
     }
 
+    public boolean hasJRoot() {
+        return hasRoot() && getRoot().hasJRoot();
+    }
+
     public @NotNull JComponent getJRoot() {
-        if (root == null)
-            throw new IllegalStateException("component '%s' is missing a root component".formatted(getName()));
-        return root.getJRoot();
+        return getRoot().getJRoot();
     }
 
     public void attach(final @NotNull Container container, final boolean constraint) {
-        if (root != null) {
-            root.attach(container, constraint, getConstraints());
-        } else if (constraint) {
-            container.add(getJRoot(), getConstraints());
+        if (hasRoot()) {
+            getRoot().attach(container, constraint, getConstraints());
+        } else if (hasJRoot()) {
+            if (constraint) {
+                container.add(getJRoot(), getConstraints());
+            } else {
+                container.add(getJRoot());
+            }
+
+            getChildren().forEach(child -> child.attach(getJRoot(), true));
         } else {
-            container.add(getJRoot());
+            getChildren().forEach(child -> child.attach(container, constraint));
         }
 
         onAttached();
@@ -109,23 +131,66 @@ public abstract class ComponentBase {
             final boolean constraint,
             final @NotNull GridBagConstraints constraints
     ) {
-        if (constraint) {
-            container.add(getJRoot(), constraints);
+        if (hasRoot()) {
+            getRoot().attach(container, constraint, constraints);
+        } else if (hasJRoot()) {
+            if (constraint) {
+                container.add(getJRoot(), constraints);
+            } else {
+                container.add(getJRoot());
+            }
+
+            getChildren().forEach(child -> child.attach(getJRoot(), true));
         } else {
-            container.add(getJRoot());
+            getChildren().forEach(child -> child.attach(container, constraint, constraints));
         }
+
+        onAttached();
     }
 
     public boolean attached() {
-        return getJRoot().getParent() != null;
+        return hasRoot()
+               ? getRoot().attached()
+               : hasJRoot()
+                 ? getJRoot().getParent() != null
+                 : getChildren().allMatch(ComponentBase::attached);
     }
 
     public @NotNull Container detach() {
-        final var container = getJRoot().getParent();
-        if (container == null)
-            throw new IllegalStateException("component '%s' is not attached to anything".formatted(getName()));
-        container.remove(getJRoot());
+        if (hasRoot()) {
+            final var container = getRoot().detach();
+
+            notifyDetached();
+            return container;
+        }
+
+        if (hasJRoot()) {
+            getChildren().forEach(ComponentBase::notifyDetached);
+
+            final var container = getJRoot().getParent();
+            if (container == null)
+                throw new IllegalStateException("component '%s' is not attached to anything".formatted(getName()));
+
+            container.remove(getJRoot());
+
+            onDetached();
+
+            return container;
+        }
+
+        final var container = getChildren()
+                .map(ComponentBase::detach)
+                .distinct()
+                .findAny()
+                .orElseThrow();
+
+        onDetached();
         return container;
+    }
+
+    public void notifyDetached() {
+        getChildren().forEach(ComponentBase::notifyDetached);
+        onDetached();
     }
 
     protected void apply(final @NotNull JComponent component) {
@@ -246,7 +311,10 @@ public abstract class ComponentBase {
     }
 
     public @NotNull Stream<? extends ComponentBase> getChildren() {
-        return children.values().stream().sorted().map(Index::value);
+        return children.values()
+                       .stream()
+                       .sorted()
+                       .map(Index::value);
     }
 
     public void beginFrame() {
@@ -257,15 +325,11 @@ public abstract class ComponentBase {
         onEndFrame();
     }
 
-    public void insert(final @NotNull String id, final @NotNull ComponentBase child) {
-        if (children.containsKey(id))
+    public void putChild(final @NotNull ComponentBase child) {
+        if (children.containsKey(child.id))
             throw new IllegalStateException();
 
-        children.put(id, new Index<>(children.size(), child));
-    }
-
-    public void insert(final @NotNull ComponentBase child) {
-        insert(child.id, child);
+        children.put(child.id, new Index<>(children.size(), child));
     }
 
     public boolean hasChild(final @NotNull String id) {
@@ -278,19 +342,23 @@ public abstract class ComponentBase {
     }
 
     public <C extends ComponentBase> C getChild(final @NotNull String id, final @NotNull Class<C> type) {
-        if (!children.containsKey(id)) {
-            for (final var child : children.values())
-                if (child.value().hasChild(id))
-                    return child.value().getChild(id, type);
-            if (root != null)
-                return root.getChild(id, type);
-            throw new IllegalStateException("no child with id '%s'".formatted(id));
+        if (children.containsKey(id)) {
+            final var child = children.get(id).value();
+
+            if (!type.isInstance(child))
+                throw new IllegalStateException("child with id '%s' is not an instance of type '%s'"
+                                                        .formatted(id, type));
+            return type.cast(child);
         }
 
-        final var child = children.get(id).value();
-        if (!type.isInstance(child))
-            throw new IllegalStateException("child with id '%s' is not an instance of type '%s'".formatted(id, type));
-        return type.cast(child);
+        for (final var child : children.values())
+            if (child.value().hasChild(id))
+                return child.value().getChild(id, type);
+
+        if (hasRoot())
+            return getRoot().getChild(id, type);
+
+        throw new IllegalStateException("no child with id '%s'".formatted(id));
     }
 
     public boolean has(final @NotNull String name) {
@@ -301,6 +369,12 @@ public abstract class ComponentBase {
         if (state.containsKey(name))
             return type.cast(state.get(name));
         return defaultValue;
+    }
+
+    public <T> @NotNull T get(final @NotNull String name, final @NotNull Class<T> type) {
+        if (state.containsKey(name))
+            return type.cast(state.get(name));
+        throw new NoSuchElementException(name);
     }
 
     public <T> void observe(

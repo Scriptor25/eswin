@@ -1,9 +1,10 @@
-package io.scriptor.eswin.impl.db;
+package io.scriptor.eswin.impl.model;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public final class PrimaryKey {
 
@@ -19,15 +20,19 @@ public final class PrimaryKey {
         this.table = table;
     }
 
-    public @NotNull String name() {
+    public @NotNull String getName() {
         return name;
     }
 
-    public @NotNull Table table() {
+    public @NotNull Table getTable() {
         return table;
     }
 
-    public @NotNull Set<Column> columns() {
-        return columns;
+    public @NotNull Stream<Column> getColumns() {
+        return columns.stream();
+    }
+
+    public void addColumn(final @NotNull Column column) {
+        columns.add(column);
     }
 }

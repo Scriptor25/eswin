@@ -1,11 +1,12 @@
 package io.scriptor.eswin.esl.runtime;
 
+import io.scriptor.eswin.util.Result;
 import org.jetbrains.annotations.NotNull;
 
 public record EslConstantChar(int val) implements EslConstant<Integer> {
 
     @Override
-    public @NotNull Integer value() {
-        return val;
+    public @NotNull Result<Integer> value() {
+        return Result.ok(val);
     }
 }

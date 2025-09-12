@@ -3,6 +3,7 @@ package io.scriptor.eswin.esl.runtime;
 import io.scriptor.eswin.esl.EslCaller;
 import io.scriptor.eswin.esl.EslGetter;
 import io.scriptor.eswin.esl.EslSetter;
+import io.scriptor.eswin.util.Result;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -15,11 +16,11 @@ public record EslMemberValue<T>(
         implements EslValue<T> {
 
     @Override
-    public @NotNull T value() {
+    public @NotNull Result<T> value() {
         try {
-            return getter.get();
+            return Result.ok(getter.get());
         } catch (final Exception e) {
-            throw new RuntimeException(e);
+            return Result.error(e);
         }
     }
 
@@ -29,7 +30,7 @@ public record EslMemberValue<T>(
             setter.set(value);
             return this;
         } catch (final Exception e) {
-            throw new RuntimeException(e);
+            return new EslErrorValue<>(e);
         }
     }
 
@@ -47,9 +48,10 @@ public record EslMemberValue<T>(
                                                  .toArray());
             if (result == null)
                 return new EslVoidValue<>();
+
             return new EslObjectValue<>(type.cast(result));
         } catch (final Exception e) {
-            throw new RuntimeException(e);
+            return new EslErrorValue<>(e);
         }
     }
 }

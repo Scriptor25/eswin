@@ -2,8 +2,6 @@ package io.scriptor.eswin.esl.runtime;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.InvocationTargetException;
-
 public record EslPackageValue<T>(@NotNull String name) implements EslValue<T> {
 
     @Override
@@ -32,12 +30,10 @@ public record EslPackageValue<T>(@NotNull String name) implements EslValue<T> {
             final var result = mtd.invoke(null, values);
             if (result == null)
                 return new EslVoidValue<>();
+
             return new EslObjectValue<>(type.cast(result));
-        } catch (final ClassNotFoundException |
-                       InvocationTargetException |
-                       NoSuchMethodException |
-                       IllegalAccessException e) {
-            throw new RuntimeException(e);
+        } catch (final Exception e) {
+            return new EslErrorValue<>(e);
         }
     }
 }

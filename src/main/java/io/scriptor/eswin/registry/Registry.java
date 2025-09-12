@@ -56,7 +56,7 @@ public class Registry {
                            .map(e -> instantiate(provider, parent, e))
                            .filter(Optional::isPresent)
                            .map(Optional::get)
-                           .forEach(instance::insert);
+                           .forEach(instance::putChild);
                     instance.endFrame();
 
                     return instance;

@@ -94,7 +94,7 @@ public class ClassScanner {
 
             Log.info(" - %s", cls);
         } catch (final ClassNotFoundException e) {
-            Log.warn(" * failed to load class '%s': %s", name, e);
+            Log.warn(" * while loading class '%s': %s", name, e);
         }
     }
 

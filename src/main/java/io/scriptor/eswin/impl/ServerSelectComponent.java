@@ -6,7 +6,7 @@ import io.scriptor.eswin.component.ComponentInfo;
 import io.scriptor.eswin.impl.builtin.ListComponent;
 import io.scriptor.eswin.impl.builtin.RouterContext;
 import io.scriptor.eswin.impl.builtin.TextFieldComponent;
-import io.scriptor.eswin.impl.db.ServerRef;
+import io.scriptor.eswin.impl.model.ServerRef;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
@@ -34,8 +34,10 @@ public class ServerSelectComponent extends ComponentBase {
 
     @Override
     protected void onAttached() {
+        super.onAttached();
+
         final var list = list();
-        final var servers = ctxSource.servers()
+        final var servers = ctxSource.getServers()
                                      .map(ServerRef::label)
                                      .toArray(String[]::new);
         list.setListData(servers);
@@ -48,8 +50,8 @@ public class ServerSelectComponent extends ComponentBase {
         if (index < 0)
             return;
 
-        if (ctxSource.selectServer(index))
-            ctxRouter.setActive("database-select");
+        ctxSource.selectServer(index);
+        ctxRouter.setActive("database-select");
     }
 
     public void create() throws SQLException {
@@ -58,7 +60,7 @@ public class ServerSelectComponent extends ComponentBase {
         final var username = getChild("username", TextFieldComponent.class);
         final var password = getChild("password", TextFieldComponent.class);
 
-        if (ctxSource.createServer(label.getText(), url.getText(), username.getText(), password.getText()))
-            ctxRouter.setActive("database-select");
+        ctxSource.createServer(label.getText(), url.getText(), username.getText(), password.getText());
+        ctxRouter.setActive("database-select");
     }
 }

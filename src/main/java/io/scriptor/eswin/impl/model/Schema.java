@@ -1,10 +1,10 @@
-package io.scriptor.eswin.impl.db;
+package io.scriptor.eswin.impl.model;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
-import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public final class Schema extends SchemaRef {
 
@@ -16,23 +16,16 @@ public final class Schema extends SchemaRef {
     private final Set<Table> tables = new HashSet<>();
 
     public Schema(final @NotNull SchemaRef ref) {
-        super(ref.database(), ref.name());
+        super(ref.getDatabase(), ref.getName());
     }
 
     public Schema(final @NotNull Database database, final @NotNull String name) {
         super(database, name);
     }
 
-    public @NotNull Table table(final @NotNull String name) {
-        return tables.stream()
-                     .filter(table -> table.name().equals(name))
-                     .findAny()
-                     .orElseThrow(() -> new NoSuchElementException("table '%s.%s'".formatted(this, name)));
-    }
-
-    public @NotNull Table table(final @NotNull String name, final @NotNull Schema.TableGenerator generator) {
+    public @NotNull Table getTable(final @NotNull String name, final @NotNull Schema.TableGenerator generator) {
         final var opt = tables.stream()
-                              .filter(table -> table.name().equals(name))
+                              .filter(table -> table.getName().equals(name))
                               .findAny();
         if (opt.isPresent())
             return opt.get();
@@ -41,7 +34,7 @@ public final class Schema extends SchemaRef {
         return table;
     }
 
-    public @NotNull Set<Table> tables() {
-        return tables;
+    public @NotNull Stream<Table> getTables() {
+        return tables.stream();
     }
 }

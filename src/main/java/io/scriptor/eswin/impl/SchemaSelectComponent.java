@@ -6,7 +6,7 @@ import io.scriptor.eswin.component.ComponentInfo;
 import io.scriptor.eswin.impl.builtin.ListComponent;
 import io.scriptor.eswin.impl.builtin.RouterContext;
 import io.scriptor.eswin.impl.builtin.TextFieldComponent;
-import io.scriptor.eswin.impl.db.SchemaRef;
+import io.scriptor.eswin.impl.model.SchemaRef;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
@@ -34,9 +34,11 @@ public class SchemaSelectComponent extends ComponentBase {
 
     @Override
     protected void onAttached() {
+        super.onAttached();
+
         final var list = list();
-        final var schemas = ctxSource.schemas()
-                                     .map(SchemaRef::name)
+        final var schemas = ctxSource.getSchemas()
+                                     .map(SchemaRef::getName)
                                      .toArray(String[]::new);
         list.setListData(schemas);
     }
@@ -48,14 +50,14 @@ public class SchemaSelectComponent extends ComponentBase {
         if (value.isEmpty())
             return;
 
-        if (ctxSource.selectSchema(value.get()))
-            ctxRouter.setActive("node-editor");
+        ctxSource.selectSchema(value.get());
+        ctxRouter.setActive("editor");
     }
 
     public void create() throws SQLException {
         final var name = getChild("name", TextFieldComponent.class);
 
-        if (ctxSource.createSchema(name.getText()))
-            ctxRouter.setActive("node-editor");
+        ctxSource.createSchema(name.getText());
+        ctxRouter.setActive("editor");
     }
 }

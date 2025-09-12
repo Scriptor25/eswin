@@ -24,7 +24,13 @@ public final class ComponentInfo {
         return this;
     }
 
-    public @Nullable ComponentBase getParent() {
+    public boolean hasParent() {
+        return parent != null;
+    }
+
+    public @NotNull ComponentBase getParent() {
+        if (parent == null)
+            throw new IllegalStateException();
         return parent;
     }
 

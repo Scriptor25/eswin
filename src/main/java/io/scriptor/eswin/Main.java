@@ -15,6 +15,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -81,10 +83,42 @@ public class Main {
                });
 
         final var provider = new ContextProvider();
-        registry.instantiate(provider, "app")
-                .ifPresent(app -> {
-                    app.attach(frame, false);
-                });
+
+        registry.instantiate(provider, "app").ifPresent(app -> {
+            app.attach(frame, false);
+
+            frame.addWindowListener(new WindowListener() {
+
+                @Override
+                public void windowOpened(final @NotNull WindowEvent e) {
+                }
+
+                @Override
+                public void windowClosing(final @NotNull WindowEvent e) {
+                    app.detach();
+                }
+
+                @Override
+                public void windowClosed(final @NotNull WindowEvent e) {
+                }
+
+                @Override
+                public void windowIconified(final @NotNull WindowEvent e) {
+                }
+
+                @Override
+                public void windowDeiconified(final @NotNull WindowEvent e) {
+                }
+
+                @Override
+                public void windowActivated(final @NotNull WindowEvent e) {
+                }
+
+                @Override
+                public void windowDeactivated(final @NotNull WindowEvent e) {
+                }
+            });
+        });
 
         frame.setPreferredSize(new Dimension(800, 600));
         frame.pack();

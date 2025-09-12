@@ -1,4 +1,4 @@
-package io.scriptor.eswin.impl.db;
+package io.scriptor.eswin.impl.model;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -12,16 +12,16 @@ public class SchemaRef {
         this.name = name;
     }
 
-    public @NotNull Database database() {
+    public @NotNull Database getDatabase() {
         return database;
     }
 
-    public @NotNull String name() {
+    public @NotNull String getName() {
         return name;
     }
 
     @Override
     public @NotNull String toString() {
-        return "%s.%s".formatted(database, name);
+        return "%s:%s".formatted(database, name);
     }
 }

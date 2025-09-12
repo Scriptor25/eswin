@@ -3,9 +3,10 @@ package io.scriptor.eswin.impl.builtin;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
 import io.scriptor.eswin.component.ComponentInfo;
-import io.scriptor.eswin.component.context.ContextProvider;
+import io.scriptor.eswin.component.context.ContextProvider.ContextFrame;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,7 @@ public class RouterComponent extends ComponentBase {
                   .ifPresent(this::setActive);
         }
     };
-    private ContextProvider.ContextFrame frame;
+    private ContextFrame frame;
 
     public RouterComponent(final @NotNull ComponentInfo info) {
         super(info);
@@ -56,17 +57,42 @@ public class RouterComponent extends ComponentBase {
 
     @Override
     protected void onEndFrame() {
+        frame.close();
+
         if (!routes.isEmpty())
             active = routes.getFirst();
-        frame.close();
+    }
+
+    @Override
+    public boolean hasJRoot() {
+        return active != null && active.hasJRoot();
+    }
+
+    @Override
+    public @NotNull JComponent getJRoot() {
+        if (active == null)
+            throw new IllegalStateException();
+        return active.getJRoot();
     }
 
     @Override
     public void attach(final @NotNull Container container, final boolean constraint) {
         if (active == null)
             throw new IllegalStateException();
-
         active.attach(container, constraint);
+
+        onAttached();
+    }
+
+    @Override
+    public void attach(
+            final @NotNull Container container,
+            final boolean constraint,
+            final @NotNull GridBagConstraints constraints
+    ) {
+        if (active == null)
+            throw new IllegalStateException();
+        active.attach(container, constraint, constraints);
 
         onAttached();
     }
@@ -82,6 +108,9 @@ public class RouterComponent extends ComponentBase {
     public @NotNull Container detach() {
         if (active == null)
             throw new IllegalStateException();
-        return active.detach();
+        final var container = active.detach();
+
+        onDetached();
+        return container;
     }
 }

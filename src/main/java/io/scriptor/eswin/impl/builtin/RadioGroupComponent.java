@@ -1,16 +1,17 @@
 package io.scriptor.eswin.impl.builtin;
 
-import io.scriptor.eswin.component.*;
 import io.scriptor.eswin.component.Component;
+import io.scriptor.eswin.component.ComponentBase;
+import io.scriptor.eswin.component.ComponentInfo;
 import io.scriptor.eswin.component.action.ActionComponentBase;
 import io.scriptor.eswin.component.action.ActionEvent;
 import io.scriptor.eswin.component.action.ActionListener;
+import io.scriptor.eswin.component.context.ContextProvider.ContextFrame;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 @Component("radio-group")
 public class RadioGroupComponent extends ActionComponentBase<RadioGroupComponent, RadioGroupComponent.Payload> {
@@ -18,13 +19,43 @@ public class RadioGroupComponent extends ActionComponentBase<RadioGroupComponent
     public record Payload() {
     }
 
+    private final List<RadioButtonComponent> radioButtons = new ArrayList<>();
     private final List<ActionListener<RadioGroupComponent, Payload>> listeners = new ArrayList<>();
+
+    private final RadioGroupContext context = new RadioGroupContext() {
+
+        @Override
+        public void addRadioButton(final @NotNull RadioButtonComponent radioButton) {
+            radioButtons.add(radioButton);
+
+            if (has("selected")) {
+                final var selected = radioButton.getId().equals(get("selected", String.class));
+                radioButton.getJRoot().setSelected(selected);
+            } else {
+                setSelected(radioButton.getId());
+            }
+
+            radioButton.addListener(_ -> setSelected(radioButton.getId()));
+        }
+    };
+
+    private ContextFrame frame;
 
     public RadioGroupComponent(final @NotNull ComponentInfo info) {
         super(info);
 
         if (getAttributes().has("default"))
             setSelected(getAttributes().get("default"));
+    }
+
+    @Override
+    protected void onBeginFrame() {
+        frame = getProvider().provide(RadioGroupContext.class, context);
+    }
+
+    @Override
+    protected void onEndFrame() {
+        frame.close();
     }
 
     @Override
@@ -35,56 +66,16 @@ public class RadioGroupComponent extends ActionComponentBase<RadioGroupComponent
     public void setSelected(final @NotNull String id) {
         notify("selected", id);
 
-        getRadioButtons().forEach(child -> {
-            if (!child.getId().equals(id)) {
-                child.setSelected(false);
+        radioButtons.forEach(radioButton -> {
+            if (!radioButton.getId().equals(id)) {
+                radioButton.getJRoot().setSelected(false);
                 return;
             }
 
             final var event = new ActionEvent<>(this, new Payload());
             listeners.forEach(listener -> listener.callback(event));
 
-            child.setSelected(true);
+            radioButton.getJRoot().setSelected(true);
         });
-    }
-
-    public @NotNull Stream<RadioButtonComponent> getRadioButtons() {
-        return getChildren()
-                .filter(child -> child instanceof RadioButtonComponent)
-                .map(RadioButtonComponent.class::cast);
-    }
-
-    @Override
-    public void attach(final @NotNull Container container, final boolean constraint) {
-        getChildren().forEach(child -> child.attach(container, constraint));
-
-        onAttached();
-    }
-
-    @Override
-    public boolean attached() {
-        return getChildren().allMatch(ComponentBase::attached);
-    }
-
-    @Override
-    public @NotNull Container detach() {
-        return getChildren()
-                .map(ComponentBase::detach)
-                .distinct()
-                .findAny()
-                .orElseThrow();
-    }
-
-    @Override
-    public void insert(final @NotNull String id, final @NotNull ComponentBase child) {
-        super.insert(id, child);
-
-        if (child instanceof RadioButtonComponent radio) {
-            if (!has("selected"))
-                setSelected(id);
-            else
-                radio.setSelected(id.equals(get("selected", "", String.class)));
-            radio.addListener(_ -> setSelected(id));
-        }
     }
 }

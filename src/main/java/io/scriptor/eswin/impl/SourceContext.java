@@ -1,10 +1,10 @@
 package io.scriptor.eswin.impl;
 
 import io.scriptor.eswin.component.context.Context;
-import io.scriptor.eswin.impl.db.DatabaseRef;
-import io.scriptor.eswin.impl.db.SchemaRef;
-import io.scriptor.eswin.impl.db.ServerRef;
-import io.scriptor.eswin.impl.db.Table;
+import io.scriptor.eswin.impl.model.DatabaseRef;
+import io.scriptor.eswin.impl.model.SchemaRef;
+import io.scriptor.eswin.impl.model.ServerRef;
+import io.scriptor.eswin.impl.model.Table;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
@@ -13,30 +13,30 @@ import java.util.stream.Stream;
 
 public interface SourceContext extends Context {
 
-    @NotNull Connection connection();
+    @NotNull Connection getConnection();
 
-    @NotNull Stream<ServerRef> servers();
+    @NotNull Stream<ServerRef> getServers();
 
-    @NotNull Stream<DatabaseRef> databases();
+    @NotNull Stream<DatabaseRef> getDatabases();
 
-    @NotNull Stream<SchemaRef> schemas();
+    @NotNull Stream<SchemaRef> getSchemas();
 
-    @NotNull Stream<Table> tables();
+    @NotNull Stream<Table> getTables();
 
-    boolean selectServer(int index) throws SQLException;
+    void selectServer(int index) throws SQLException;
 
-    boolean createServer(
+    void createServer(
             @NotNull String label,
             @NotNull String url,
             @NotNull String username,
             @NotNull String password
     ) throws SQLException;
 
-    boolean selectDatabase(@NotNull String databaseName) throws SQLException;
+    void selectDatabase(@NotNull String databaseName) throws SQLException;
 
-    boolean createDatabase(@NotNull String name) throws SQLException;
+    void createDatabase(@NotNull String name) throws SQLException;
 
-    boolean selectSchema(@NotNull String schemaName) throws SQLException;
+    void selectSchema(@NotNull String schemaName) throws SQLException;
 
-    boolean createSchema(@NotNull String name) throws SQLException;
+    void createSchema(@NotNull String name) throws SQLException;
 }

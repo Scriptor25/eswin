@@ -1,4 +1,4 @@
-package io.scriptor.eswin.impl.db;
+package io.scriptor.eswin.impl.model;
 
 import org.jetbrains.annotations.NotNull;
 

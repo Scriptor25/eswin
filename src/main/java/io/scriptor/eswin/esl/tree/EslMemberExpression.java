@@ -19,11 +19,17 @@ public record EslMemberExpression(@NotNull EslExpression object, @NotNull String
     public <T> void observe(
             final @NotNull EslFrame frame,
             final @NotNull Consumer<T> observer,
+            final @NotNull Consumer<Throwable> thrown,
             final @NotNull Class<T> type
     ) {
-        final var object    = this.object.evaluate(frame, ComponentBase.class);
-        final var component = object.value();
+        final var object = this.object.evaluate(frame, ComponentBase.class);
 
-        component.observe(member, observer, type);
+        final var result = object.value();
+        if (result.error()) {
+            thrown.accept(result.thrown());
+            return;
+        }
+
+        result.value().observe(member, observer, type);
     }
 }

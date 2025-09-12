@@ -22,24 +22,12 @@ public class PanelComponent extends ComponentBase {
     }
 
     @Override
-    public @NotNull JComponent getJRoot() {
-        return root;
+    public boolean hasJRoot() {
+        return true;
     }
 
     @Override
-    public void attach(
-            final @NotNull Container container,
-            final boolean constraint,
-            final @NotNull GridBagConstraints constraints
-    ) {
-        if (constraint) {
-            container.add(root, constraints);
-        } else {
-            container.add(root);
-        }
-
-        getChildren().forEach(child -> child.attach(root, true));
-
-        onAttached();
+    public @NotNull JComponent getJRoot() {
+        return root;
     }
 }

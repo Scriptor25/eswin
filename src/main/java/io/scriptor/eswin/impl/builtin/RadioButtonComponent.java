@@ -1,6 +1,7 @@
 package io.scriptor.eswin.impl.builtin;
 
-import io.scriptor.eswin.component.*;
+import io.scriptor.eswin.component.Component;
+import io.scriptor.eswin.component.ComponentInfo;
 import io.scriptor.eswin.component.action.ActionComponentBase;
 import io.scriptor.eswin.component.action.ActionEvent;
 import io.scriptor.eswin.component.action.ActionListener;
@@ -31,6 +32,11 @@ public class RadioButtonComponent extends ActionComponentBase<RadioButtonCompone
             root.setVerticalAlignment(parseSwing(getAttributes().get("v-align")));
 
         observe("#text", root::setText, String.class);
+
+        if (getProvider().provides(RadioGroupContext.class)) {
+            final var context = getProvider().use(RadioGroupContext.class);
+            context.addRadioButton(this);
+        }
     }
 
     @Override
@@ -41,11 +47,12 @@ public class RadioButtonComponent extends ActionComponentBase<RadioButtonCompone
     }
 
     @Override
-    public @NotNull JRadioButton getJRoot() {
-        return root;
+    public boolean hasJRoot() {
+        return true;
     }
 
-    public void setSelected(final boolean selected) {
-        root.setSelected(selected);
+    @Override
+    public @NotNull JRadioButton getJRoot() {
+        return root;
     }
 }

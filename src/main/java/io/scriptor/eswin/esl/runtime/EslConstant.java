@@ -18,8 +18,15 @@ public interface EslConstant<T> extends EslValue<T>, EslExpression {
     default <V> void observe(
             final @NotNull EslFrame frame,
             final @NotNull Consumer<V> observer,
+            final @NotNull Consumer<Throwable> thrown,
             final @NotNull Class<V> type
     ) {
-        observer.accept(type.cast(value()));
+        final var result = value();
+        if (result.error()) {
+            thrown.accept(result.thrown());
+            return;
+        }
+
+        observer.accept(type.cast(result.value()));
     }
 }

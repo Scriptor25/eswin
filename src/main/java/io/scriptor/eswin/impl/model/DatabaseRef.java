@@ -1,4 +1,4 @@
-package io.scriptor.eswin.impl.db;
+package io.scriptor.eswin.impl.model;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -12,11 +12,11 @@ public class DatabaseRef {
         this.name = name;
     }
 
-    public @NotNull Server server() {
+    public @NotNull Server getServer() {
         return server;
     }
 
-    public @NotNull String name() {
+    public @NotNull String getName() {
         return name;
     }
 

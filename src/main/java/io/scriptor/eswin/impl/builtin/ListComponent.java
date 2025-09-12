@@ -53,6 +53,11 @@ public class ListComponent<T> extends ActionComponentBase<ListComponent<T>, List
     }
 
     @Override
+    public boolean hasJRoot() {
+        return true;
+    }
+
+    @Override
     public @NotNull JComponent getJRoot() {
         return root;
     }

@@ -17,12 +17,16 @@ public interface EslExpression {
     default <V> void observe(
             final @NotNull EslFrame frame,
             final @NotNull Consumer<V> observer,
-            final @NotNull Class<V> type
+            @NotNull Consumer<Throwable> thrown, final @NotNull Class<V> type
     ) {
         throw new UnsupportedOperationException();
     }
 
-    default void observe(final @NotNull EslFrame frame, final @NotNull Consumer<Object> observer) {
-        observe(frame, observer, Object.class);
+    default void observe(
+            final @NotNull EslFrame frame,
+            final @NotNull Consumer<Object> observer,
+            final @NotNull Consumer<Throwable> thrown
+    ) {
+        observe(frame, observer, thrown, Object.class);
     }
 }

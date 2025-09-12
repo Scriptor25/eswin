@@ -1,6 +1,7 @@
 package io.scriptor.eswin.esl.tree;
 
 import io.scriptor.eswin.esl.EslFrame;
+import io.scriptor.eswin.esl.runtime.EslErrorValue;
 import io.scriptor.eswin.esl.runtime.EslValue;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,6 +12,10 @@ public record EslStoreExpression(@NotNull EslExpression dst, @NotNull EslExpress
         final var dst = this.dst.evaluate(frame, type);
         final var src = this.src.evaluate(frame, type);
 
-        return dst.store(src.value());
+        final var result = src.value();
+        if (result.error())
+            return new EslErrorValue<>(result.thrown());
+
+        return dst.store(result.value());
     }
 }

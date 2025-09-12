@@ -46,6 +46,11 @@ public class EmbedComponent extends ComponentBase {
     }
 
     @Override
+    public boolean hasJRoot() {
+        return true;
+    }
+
+    @Override
     public @NotNull JComponent getJRoot() {
         return root;
     }
