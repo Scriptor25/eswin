@@ -4,6 +4,7 @@ import com.formdev.flatlaf.ui.FlatUIUtils;
 import io.scriptor.eswin.component.Component;
 import io.scriptor.eswin.component.ComponentBase;
 import io.scriptor.eswin.component.ComponentInfo;
+import io.scriptor.eswin.impl.view.LinkView;
 import io.scriptor.eswin.impl.view.TableView;
 import io.scriptor.eswin.util.Log;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +16,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component(value = "editor")
 public class EditorComponent extends ComponentBase {
@@ -25,6 +28,8 @@ public class EditorComponent extends ComponentBase {
     private final SourceContext ctxSource;
 
     private final List<TableView> tables = new ArrayList<>();
+    private final Set<LinkView> links = new HashSet<>();
+
     private TableView hovered;
     private TableView selected;
 
@@ -50,6 +55,7 @@ public class EditorComponent extends ComponentBase {
                 g2.drawString(label, (getWidth() - sw) / 2, (getHeight() + sh) / 2);
 
                 tables.forEach(view -> view.paint(g2, hovered, selected));
+                links.forEach(view -> view.paint(g2, tables));
             }
 
             @Override
@@ -85,8 +91,6 @@ public class EditorComponent extends ComponentBase {
                 selected = null;
 
                 if (view != null) {
-                    view.onDragEnd(event.getX(), event.getY());
-
                     root.repaint(view.getBounds());
                 }
             }
@@ -109,6 +113,11 @@ public class EditorComponent extends ComponentBase {
                     selected.onDrag(event.getX(), event.getY());
 
                     Rectangle.union(bounds, selected.getBounds(), bounds);
+
+                    links.stream()
+                         .filter(view -> view.uses(selected))
+                         .forEach(view -> Rectangle.union(bounds, view.getBounds(), bounds));
+
                     root.repaint(bounds);
                 }
             }
@@ -153,10 +162,16 @@ public class EditorComponent extends ComponentBase {
         super.onAttached();
 
         tables.clear();
+        links.clear();
+
         ctxSource.getTables()
                  .map(TableView::new)
                  .forEach(view -> {
                      tables.add(view);
+                     view.getTable()
+                         .getForeignKeys()
+                         .map(LinkView::new)
+                         .forEach(links::add);
 
                      try {
                          view.get(ctxSource.getConnection());
@@ -177,6 +192,8 @@ public class EditorComponent extends ComponentBase {
                 Log.warn("while put table view '%s': %s", view, e);
             }
         });
+
         tables.clear();
+        links.clear();
     }
 }

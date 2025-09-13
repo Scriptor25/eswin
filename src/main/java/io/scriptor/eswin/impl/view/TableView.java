@@ -19,6 +19,7 @@ public final class TableView {
     private static final Color COLOR_BORDER = new Color(0x212121);
 
     private static final int PADDING = 10;
+    private static final int GRID_SIZE = 10;
 
     private final Table table;
 
@@ -81,6 +82,18 @@ public final class TableView {
         return new Rectangle(x, y, width, height);
     }
 
+    private void drawStringCentered(
+            final @NotNull Graphics2D g2,
+            final @NotNull String string,
+            final int x,
+            final int y,
+            final int height
+    ) {
+        final var metrics = g2.getFontMetrics();
+        final var ty      = y + (height - metrics.getHeight()) / 2 + metrics.getAscent();
+        g2.drawString(string, x, ty);
+    }
+
     public void paint(
             final @NotNull Graphics2D g2,
             final @Nullable TableView hovered,
@@ -89,8 +102,8 @@ public final class TableView {
         width = 0;
         height = 0;
 
-        final var fontHeight = g2.getFontMetrics().getHeight();
-        final var rowHeight  = fontHeight + PADDING;
+        final var labelHeight = g2.getFontMetrics().getHeight() + PADDING;
+
         final var columns = table.getColumns()
                                  .sorted(Comparator.comparingInt(Column::getOrdinalPosition))
                                  .toList();
@@ -102,7 +115,7 @@ public final class TableView {
             if (width < labelWidth)
                 width = labelWidth;
 
-            height += rowHeight;
+            height += labelHeight;
         }
 
         columns.forEach(column -> {
@@ -112,35 +125,52 @@ public final class TableView {
             if (width < labelWidth)
                 width = labelWidth;
 
-            height += rowHeight;
+            height += labelHeight;
         });
 
         width += 2 * PADDING;
-        height += 2 * PADDING;
+        height += 4 * PADDING;
+
+        {
+            final var rem = width % GRID_SIZE;
+            if (rem != 0) {
+                width += GRID_SIZE - rem;
+            }
+        }
+        {
+            final var rem = height % GRID_SIZE;
+            if (rem != 0) {
+                height += GRID_SIZE - rem;
+            }
+        }
 
         g2.setClip(x, y, width, height);
 
-        g2.setColor(this == selected
-                    ? COLOR_SELECT
-                    : this == hovered
-                      ? COLOR_HOVER
-                      : COLOR_NORMAL);
-        g2.fillRect(x, y, width, height);
+        if (selected != this) {
+            g2.setColor(this == hovered ? COLOR_HOVER : COLOR_NORMAL);
+            g2.fillRect(x, y, width, height);
 
-        {
-            final var label = table.getName();
+            {
+                final var label = table.getName();
 
-            g2.setColor(COLOR_TEXT);
-            g2.drawString(label, x + PADDING, y + rowHeight);
-        }
+                g2.setColor(COLOR_TEXT);
+                drawStringCentered(g2, label, x + PADDING, y + PADDING, labelHeight);
+            }
 
-        for (int i = 0; i < columns.size(); ++i) {
-            final var column = columns.get(i);
-            final var label  = column.getName();
-            final var offset = (i + 1) * rowHeight;
+            final var dy = PADDING * 2 + labelHeight;
 
-            g2.setColor(COLOR_TEXT);
-            g2.drawString(label, x + PADDING, y + offset + rowHeight);
+            for (int i = 0; i < columns.size(); ++i) {
+                final var column = columns.get(i);
+                final var label  = column.getName();
+                final var offset = i * labelHeight + PADDING + dy;
+
+                g2.setColor(COLOR_TEXT);
+                drawStringCentered(g2, label, x + PADDING, y + offset, labelHeight);
+            }
+
+            g2.setColor(COLOR_BORDER);
+            g2.setStroke(new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER));
+            g2.drawLine(x, y + dy, x + width - 1, y + dy);
         }
 
         g2.setColor(COLOR_BORDER);
@@ -153,13 +183,11 @@ public final class TableView {
         dy = y - this.y;
     }
 
-    public void onDragEnd(final int x, final int y) {
-        this.x = x - dx;
-        this.y = y - dy;
-    }
-
     public void onDrag(final int x, final int y) {
         this.x = x - dx;
         this.y = y - dy;
+
+        this.x = (this.x / GRID_SIZE) * GRID_SIZE;
+        this.y = (this.y / GRID_SIZE) * GRID_SIZE;
     }
 }
